@@ -121,7 +121,7 @@ void free_devolution(Devolution *d)
     Devolution_node *current = d->inicio;
     Devolution_node *next;
 
-    while (current) 
+    while(current) 
     {
         next = current->proximo;
         free_node_devolution(current);
@@ -135,6 +135,7 @@ void free_route(Route *r)
 {
     Route_node *current = r->inicio;
     Route_node *next;
+
     while (current) 
     {
         next = current->proximo;
@@ -147,3 +148,4 @@ void free_route(Route *r)
 
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// FUNÇÕES DE PEDIDO //////////////////////////////////
+

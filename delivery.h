@@ -88,4 +88,43 @@ void free_route();
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// FUNÇÕES DE PEDIDO //////////////////////////////////
 
+// Cadastro de Clientes
+void customer_register();
+// Busca de Cliente
+void customer_search();
+// Remoção de Cliente
+void client_removal();
+// Listagem de Clientes
+void customer_List(Client *client);
+
+////////////////////////////////////////////////////////////////////////////////
+/////////////////////////// FUNÇÕES DE ROTA ////////////////////////////////////
+
+// Adicionar Entrega na Rota
+void add_delivery_route();
+// Remover Entrega da Rota
+void remove_delivery_route();
+// Listar Entregas na Rota
+void list_route(Route *route);
+
+////////////////////////////////////////////////////////////////////////////////
+/////////////////////////// FUNÇÕES DE ENTREGA /////////////////////////////////
+
+// Adicionar Entrega Não Efetuada na Pilha
+void add_undelivered();
+// Remover Entrega Não Efetuada da Pilha
+void remove_undelivered();
+// Listar Entregas Não Efetuadas
+void list_unfulfilled_deliveries(Deliveries *deliveries);
+
+////////////////////////////////////////////////////////////////////////////////
+/////////////////////////// FUNÇÕES DE DEVOLUÇÃO ///////////////////////////////
+
+// Adicionar Devolução na Fila
+void add_devolution();
+// Remover Devolução da Fila
+void remove_devolution();
+
+
+
 #endif
