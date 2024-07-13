@@ -19,6 +19,15 @@ void check_allocation(void *pointer, const char *mensage)
     }
 }
 
+// verifica se uma escolha é valida 
+BOOL valid_answer(int min, int max, int answer)
+{
+    if(answer > max || answer < min)
+        return FALSE;
+    
+    return TRUE;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////// FUNÇÕES DE ALOCAÇÃO/DESALOCAÇÃO ///////////////////////////
 
@@ -128,7 +137,6 @@ void free_devolution(Devolution *d)
         current = next;
     }
 
-
     free(d);
 }
 
@@ -223,29 +231,22 @@ void remove_devolution(Devolution *devolution)
     printf("null\n");
 }
 
+void list_devolutions(Devolution *devolution)
+{
+    printf("null\n");
+}
 
-void menu() {
+// Funções para exibir os submenus e capturar a escolha do usuário
+void menu_client(Client *client) 
+{
     int choice;
-    Client *client = NULL; // Estrutura para manipulação de clientes
-    Route *route = (Route *)malloc(sizeof(Route)); // Estrutura para rotas
-    Deliveries *deliveries = (Deliveries *)malloc(sizeof(Deliveries)); // Estrutura para entregas não efetuadas
-    Devolution *devolution = (Devolution *)malloc(sizeof(Devolution)); // Estrutura para devoluções
-
     do {
-        printf("\n==== MENU ====\n");
+        printf("\n==== MENU CLIENTES ====\n");
         printf("1. Registrar Cliente\n");
         printf("2. Buscar Cliente\n");
         printf("3. Remover Cliente\n");
         printf("4. Listar Clientes\n");
-        printf("5. Adicionar Entrega na Rota\n");
-        printf("6. Remover Entrega da Rota\n");
-        printf("7. Listar Entregas na Rota\n");
-        printf("8. Adicionar Entrega Não Efetuada na Pilha\n");
-        printf("9. Remover Entrega Não Efetuada da Pilha\n");
-        printf("10. Listar Entregas Não Efetuadas\n");
-        printf("11. Adicionar Devolução na Fila\n");
-        printf("12. Remover Devolução da Fila\n");
-        printf("0. Sair\n");
+        printf("0. Voltar\n");
         printf("Escolha uma opção: ");
         scanf("%d", &choice);
 
@@ -263,29 +264,143 @@ void menu() {
             case 4:
                 customer_list(client);
                 break;
-            case 5:
+            case 0:
+                printf("Voltando...\n");
+                break;
+            default:
+                printf("Opção inválida! Tente novamente.\n");
+        }
+
+    } while (choice != 0);
+}
+
+void menu_route(Route *route) 
+{
+    int choice;
+    do {
+        printf("\n==== MENU ROTAS ====\n");
+        printf("1. Adicionar Entrega na Rota\n");
+        printf("2. Remover Entrega da Rota\n");
+        printf("3. Listar Entregas na Rota\n");
+        printf("0. Voltar\n");
+        printf("Escolha uma opção -> ");
+        scanf("%d", &choice);
+
+        switch (choice) 
+        {
+            case 1:
                 add_delivery_route(route);
                 break;
-            case 6:
+            case 2:
                 remove_delivery_route(route);
                 break;
-            case 7:
+            case 3:
                 list_route(route);
                 break;
-            case 8:
+            case 0:
+                printf("Voltando...\n");
+                break;
+            default:
+                printf("Opção inválida! Tente novamente.\n");
+        }
+    } while (choice != 0);
+}
+
+void menu_delivery(Deliveries *deliveries) 
+{
+    int choice;
+    do {
+        printf("\n==== MENU ENTREGAS NÃO EFETUADAS ====\n");
+        printf("1. Adicionar Entrega Não Efetuada na Pilha\n");
+        printf("2. Remover Entrega Não Efetuada da Pilha\n");
+        printf("3. Listar Entregas Não Efetuadas\n");
+        printf("0. Voltar\n");
+        printf("Escolha uma opção: ");
+        scanf("%d", &choice);
+
+        switch (choice) 
+        {
+            case 1:
                 add_undelivered(deliveries);
                 break;
-            case 9:
+            case 2:
                 remove_undelivered(deliveries);
                 break;
-            case 10:
+            case 3:
                 list_unfulfilled_deliveries(deliveries);
                 break;
-            case 11:
+            case 0:
+                printf("Voltando...\n");
+                break;
+            default:
+                printf("Opção inválida! Tente novamente.\n");
+        }
+    } while (choice != 0);
+}
+
+void menu_devolution(Devolution *devolution) 
+{
+    int choice;
+    do {
+        printf("\n==== MENU DEVOLUÇÕES ====\n");
+        printf("1. Adicionar Devolução na Fila\n");
+        printf("2. Remover Devolução da Fila\n");
+        printf("3. Listar Devoluções\n");
+        printf("0. Voltar\n");
+        printf("Escolha uma opção: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
                 add_devolution(devolution);
                 break;
-            case 12:
+            case 2:
                 remove_devolution(devolution);
+                break;
+            case 3:
+                list_devolutions(devolution);
+                break;
+            case 0:
+                printf("Voltando...\n");
+                break;
+            default:
+                printf("Opção inválida! Tente novamente.\n");
+        }
+    } while (choice != 0);
+}
+
+// Função para exibir o menu principal e capturar a escolha do usuário
+void menu() 
+{
+    int choice;
+    Client *client = alloc_client();
+    Route *route = alloc_route();
+    Deliveries *deliveries = alloc_deliveries();
+    Devolution *devolution = alloc_devolution();
+
+    do {
+        printf("\n==== MENU PRINCIPAL ====\n");
+        printf("1. Menu Clientes\n");
+        printf("2. Menu Rotas\n");
+        printf("3. Menu Entregas Não Efetuadas\n");
+        printf("4. Menu Devoluções\n");
+        printf("0. Sair\n");
+        printf("Escolha uma opção -> ");
+        scanf("%d", &choice);
+
+        switch (choice) 
+        {
+            case 1:
+                menu_client(client);
+                break;
+            case 2:
+                menu_route(route);
+                break;
+            case 3:
+                menu_delivery(deliveries);
+                break;
+            case 4:
+                menu_devolution(devolution);
                 break;
             case 0:
                 printf("Saindo...\n");
@@ -299,4 +414,10 @@ void menu() {
     free(route);
     free(deliveries);
     free(devolution);
+}
+
+int main()
+{
+    menu();
+    return 0;
 }

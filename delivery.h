@@ -66,6 +66,7 @@ void check_allocation(void *pointer, const char *mensage);
 #define TRUE 1
 #define FALSE 0
 
+typedef int BOOL;
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////// FUNÇÕES DE ALOCAÇÃO/DESALOCAÇÃO ///////////////////////////
@@ -128,6 +129,16 @@ void list_unfulfilled_deliveries(Deliveries *deliveries);
 void add_devolution(Devolution *devolution);
 // Remover Devolução da Fila
 void remove_devolution(Devolution *devolution);
+// listar devoluções
+void list_devolutions(Devolution *devolution);
 
+////////////////////////////////////////////////////////////////////////////////
+//////////////////////////// FUNÇÕES DE MENU ///////////////////////////////////
  
+void menu_client(Client *client);
+void menu_route(Route *route);
+void menu_delivery(Deliveries *deliveries);
+void menu_devolution(Devolution *devolution);
+
+
 #endif
