@@ -65,7 +65,7 @@ int char_quant(char *str)
     return i;
 }
 
-BOOL validate_cpf(char *cpf)
+BOOL validate_cpf(Client *head, char *cpf)
 {
     int size = char_quant(cpf);
     if(!valid_answer(CPF_LIMIT, CPF_LIMIT, size))
@@ -73,7 +73,19 @@ BOOL validate_cpf(char *cpf)
         printf("TAMANHO INVALIDO\n");
         return FALSE;
     }
-    else if(contains_string(cpf)) return FALSE;
+    else if
+        (contains_string(cpf)) return FALSE;
+    
+    Client *aux = head;
+    while(aux)
+    {
+        if(strcmp(aux->cpf, cpf) == 0)
+        {
+            printf("CPF já está em uso\n");
+            return FALSE;
+        }
+        aux = aux->next;
+    }
     
     return TRUE;
 }
@@ -84,8 +96,6 @@ int get_int(char *mensage)
     int value;
     printf("DIGITE %s ->", mensage);
     scanf("%d", &value);
-
-    while(getchar() != '\n');
 
     return value;
 }
@@ -267,37 +277,189 @@ void free_route(Route *r)
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// FUNÇÕES DE PEDIDO //////////////////////////////////
 
-// Cadastro de Clientes
-void customer_register(Client *client)
+// mostra um cliente espesifico
+void print_client(Client client)
 {
-    Client *new_client = client;
+    printf("Nome: %s\n", client.name);
+    printf("CPF: %s\n", client.cpf);
+    printf("Endereço: %s\n", client.address);
+    printf("ID: %d\n", client.id_client);
+}
 
-    while(new_client) new_client = new_client->next;
-    new_client = alloc_client();
+// Cadastro de Clientes
+void customer_register(Client *head) 
+{
+    Client *new_client = alloc_client();
+    Client *aux = head;
 
-    get_char("o nome do cliente", new_client->name);
-    do{
-        get_char_digit("o CPF do cliente", new_client->cpf);
+    while (aux->next) aux = aux->next;
+
+    do {
+        get_char_digit("o cpf do cliente", new_client->cpf);
     } 
-    while(!validate_cpf(new_client->cpf));
-    get_char_digit("o endereco do cliente", new_client->address);
+    while (!validate_cpf(head, new_client->cpf));
+    get_char("o nome do cliente", new_client->name);
+    get_char("o endereco do cliente", new_client->address);
+
+
     new_client->id_client = id_client;
     id_client += 1;
+    aux->next = new_client;
 }
+
 // Busca de Cliente
-void customer_search(Client *client)
+void customer_search(Client *head) 
 {
-    printf("null\n");
+    Client *aux_client;
+    Aux aux = {0};
+
+    while (TRUE) 
+    {
+        printf("\n___ TIPOS DE BUSCA ____\n");
+        do {
+            printf("[1] - ID\n");
+            printf("[2] - CPF\n");
+            printf("[0] - VOLTAR\n");
+            aux.opt = get_int("sua escolha");
+        } 
+        while (!valid_answer(0, 2, aux.opt));
+
+        if (aux.opt == 0) break;
+
+        switch (aux.opt) 
+        {
+        case 1:
+            aux_client = head->next;
+
+            do {
+                aux.id = get_int("o id do cliente");
+                aux.attempts += 1;
+            } 
+            while(!valid_answer(0, id_client, aux.id) && aux.attempts < 3);
+
+            if (aux.attempts <= 3) 
+            {
+                while (aux_client) 
+                {
+                    if (aux_client->id_client == aux.id) 
+                    {
+                        print_client(*aux_client);
+                        break;
+                    }
+                    aux_client = aux_client->next;
+                }
+            } 
+            else 
+                printf("Cliente não encontrado!\n");
+            break;
+        case 2:
+            aux_client = head->next;
+
+            do {
+                get_char_digit("o cpf do cliente", aux.cpf);
+            } 
+            while(!validate_cpf(head, aux.cpf));
+
+            while (aux_client) 
+            {
+                if (strcmp(aux_client->cpf, aux.cpf) == 0) 
+                {
+                    print_client(*aux_client);
+                    break;
+                }
+                aux_client = aux_client->next;
+            }
+            break;
+        default:
+            break;
+        }
+    }
 }
+
 // Remoção de Cliente
-void client_removal(Client *client)
+void client_removal(Client *head) 
 {
-    printf("null\n");
+    if (!head) return;
+
+    Client *aux_client, *previous;
+    Aux aux = {0};
+
+    while (TRUE) {
+        printf("\n___ TIPOS DE REMOÇÃO ____\n");
+        do {
+            printf("[1] - ID\n");
+            printf("[2] - CPF\n");
+            printf("[0] - VOLTAR\n");
+            aux.opt = get_int("sua escolha");
+        } 
+        while (!valid_answer(0, 2, aux.opt));
+
+        if (aux.opt == 0) break;
+
+        switch (aux.opt) 
+        {
+        case 1:
+            aux_client = head->next;
+            previous = head;
+
+            do {
+                aux.id = get_int("o id do cliente");
+                aux.attempts += 1;
+            } while (!valid_answer(0, id_client, aux.id) && aux.attempts <= 3);
+
+            if (aux.attempts >= 3) break;
+
+            while (aux_client) 
+            {
+                if (aux.id == aux_client->id_client) 
+                {
+                    previous->next = aux_client->next;
+                    free_client(aux_client);
+                    printf("Cliente removido com sucesso.\n");
+                    return;
+                }
+                previous = aux_client;
+                aux_client = aux_client->next;
+            }
+            break;
+        case 2:
+            aux_client = head->next;
+            previous = head;
+
+            do {
+                get_char_digit("o cpf do cliente", aux.cpf);
+            } 
+            while (!validate_cpf(head, aux.cpf));
+
+            while (aux_client) 
+            {
+                if (strcmp(aux.cpf, aux_client->cpf) == 0) 
+                {
+                    previous->next = aux_client->next;
+                    free_client(aux_client);
+                    printf("Cliente removido com sucesso.\n");
+                    return;
+                }
+                previous = aux_client;
+                aux_client = aux_client->next;
+            }
+            break;
+        default:
+            break;
+        }
+        printf("Cliente não encontrado.\n");
+    }
 }
+
 // Listagem de Clientes
-void customer_list(Client *client)
+void customer_list(Client *head) 
 {
-    printf("null\n");
+    Client *aux = head->next;
+    while (aux) 
+    {
+        print_client(*aux);
+        aux = aux->next;
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
