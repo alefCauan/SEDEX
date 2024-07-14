@@ -2,6 +2,7 @@
 #include "delivery.h"
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h> 
 #include <errno.h>
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -28,13 +29,111 @@ BOOL valid_answer(int min, int max, int answer)
     return TRUE;
 }
 
+BOOL contains_digit(const char *str) 
+{
+    while(*str) 
+    {
+        if (isdigit((unsigned char)*str)) 
+        {
+            printf("Não é permitido o uso de números!\n");
+            return TRUE;
+        }
+        str++;
+    }
+    return FALSE;
+}
+
+BOOL contains_string(const char *str) 
+{
+    while(*str) 
+    {
+        if (isalpha((unsigned char)*str)) 
+        {
+            printf("Nao eh permitido o uso de caracteres!\n");
+            return TRUE;
+        }
+        str++;
+    }
+    return FALSE;
+}
+
+int char_quant(char *str)
+{
+    int i;
+    for(i = 0; str[i] != '\0'; i++);
+
+    return i;
+}
+
+BOOL validate_cpf(char *cpf)
+{
+    int size = char_quant(cpf);
+    if(!valid_answer(CPF_LIMIT, CPF_LIMIT, size))
+    {
+        printf("TAMANHO INVALIDO\n");
+        return FALSE;
+    }
+    else if(contains_string(cpf)) return FALSE;
+    
+    return TRUE;
+}
+
+// pega o valor de um numero inteiro 
+int get_int(char *mensage)
+{
+    int value;
+    printf("DIGITE %s ->", mensage);
+    scanf("%d", &value);
+
+    while(getchar() != '\n');
+
+    return value;
+}
+
+// gera uma string, e valida dependendo do tipo de str
+void get_char(char *mensage, char *str)
+{
+    char value[100];
+
+    do{
+        printf("DIGITE %s -> ", mensage);
+        setbuf(stdin, NULL);
+        scanf("%[^\n]", value);
+    } 
+    while(contains_digit(value));
+
+    strcpy(str, value);
+}
+
+// permite uma string com digitos
+void get_char_digit(char *mensage, char *str)
+{
+    char value[100];
+
+    printf("DIGITE %s ->", mensage);
+    setbuf(stdin, NULL);
+    scanf("%[^\n]", value);
+    
+    strcpy(str, value);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////// FUNÇÕES DE ALOCAÇÃO/DESALOCAÇÃO ///////////////////////////
+
+char *alloc_string()
+{
+    char *str = (char *)malloc(100 * sizeof(char));
+    return str;
+}
 
 Client *alloc_client() 
 {
     Client *c = (Client *)malloc(sizeof(Client));
     check_allocation(c, "Client alloc\n");
+    c->cpf = alloc_string();
+    c->name = alloc_string();
+    c->address = alloc_string();
+    c->next = NULL;
     return c;
 }
 
@@ -43,6 +142,8 @@ Deliveries_node *alloc_node_deliveries()
     Deliveries_node *dn = (Deliveries_node *)malloc(sizeof(Deliveries_node));
     check_allocation(dn, "Deliveries_node alloc\n");
     dn->cliente = alloc_client();
+    dn->address = alloc_string();
+    dn->next = NULL;
     return dn;
 }
 
@@ -51,6 +152,8 @@ Devolution_node *alloc_node_devolution()
     Devolution_node *dn = (Devolution_node *)malloc(sizeof(Devolution_node));
     check_allocation(dn, "Devolution_node alloc\n");
     dn->cliente = alloc_client();
+    dn->address = alloc_string();
+    dn->next = NULL;
     return dn;
 }
 
@@ -58,7 +161,9 @@ Route_node *alloc_node_route()
 {
     Route_node *rn = (Route_node *)malloc(sizeof(Route_node));
     check_allocation(rn, "Route_node alloc\n");
-    rn->cliente = alloc_client();
+    rn->client = alloc_client();
+    rn->address = alloc_string();
+    rn->proximo = NULL;
     return rn;
 }
 
@@ -66,16 +171,15 @@ Deliveries *alloc_deliveries()
 {
     Deliveries *d = (Deliveries *)malloc(sizeof(Deliveries));
     check_allocation(d, "Deliveries alloc\n");
-    d->topo = NULL;
+    d->top = NULL;
     return d;
 }
 
-Devolution *alloc_devolution()
-{
+Devolution *alloc_devolution() {
     Devolution *d = (Devolution *)malloc(sizeof(Devolution));
     check_allocation(d, "Devolution alloc\n");
-    d->inicio = NULL;
-    d->fim = NULL;
+    d->start = NULL;
+    d->end = NULL;
     return d;
 }
 
@@ -83,77 +187,82 @@ Route *alloc_route()
 {
     Route *r = (Route *)malloc(sizeof(Route));
     check_allocation(r, "Route alloc\n");
-    r->inicio = NULL;
-    r->fim = NULL;
+    r->start = NULL;
+    r->end = NULL;
     return r;
 }
 
 ////////////////////////////////////////////////////
 
-void free_client(Client *c) { free(c); }
+void free_client(Client *c) 
+{
+    free(c->cpf);
+    free(c->name);
+    free(c->address);
+    free(c);
+}
 
 void free_node_deliveries(Deliveries_node *dn) 
 {
     free_client(dn->cliente);
+    free(dn->address);
     free(dn);
 }
 
 void free_node_devolution(Devolution_node *dn) 
 {
     free_client(dn->cliente);
+    free(dn->address);
     free(dn);
 }
 
 void free_node_route(Route_node *rn) 
 {
-    free_client(rn->cliente);
+    free_client(rn->client);
+    free(rn->address);
     free(rn);
 }
 
 void free_deliveries(Deliveries *d) 
 {
-    Deliveries_node *current = d->topo;
+    Deliveries_node *current = d->top;
     Deliveries_node *next;
 
-    while (current) 
-    {
-        next = current->proximo;
+    while (current) {
+        next = current->next;
         free_node_deliveries(current);
         current = next;
     }
-
     free(d);
 }
 
-void free_devolution(Devolution *d)
+void free_devolution(Devolution *d) 
 {
-    Devolution_node *current = d->inicio;
+    Devolution_node *current = d->start;
     Devolution_node *next;
 
-    while(current) 
+    while (current) 
     {
-        next = current->proximo;
+        next = current->next;
         free_node_devolution(current);
         current = next;
     }
-
     free(d);
 }
 
 void free_route(Route *r) 
 {
-    Route_node *current = r->inicio;
+    Route_node *current = r->start;
     Route_node *next;
 
-    while (current) 
-    {
+    while (current) {
         next = current->proximo;
         free_node_route(current);
         current = next;
     }
-
     free(r);
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// FUNÇÕES DE PEDIDO //////////////////////////////////
@@ -161,7 +270,19 @@ void free_route(Route *r)
 // Cadastro de Clientes
 void customer_register(Client *client)
 {
-    printf("null\n");
+    Client *new_client = client;
+
+    while(new_client) new_client = new_client->next;
+    new_client = alloc_client();
+
+    get_char("o nome do cliente", new_client->name);
+    do{
+        get_char_digit("o CPF do cliente", new_client->cpf);
+    } 
+    while(!validate_cpf(new_client->cpf));
+    get_char_digit("o endereco do cliente", new_client->address);
+    new_client->id_client = id_client;
+    id_client += 1;
 }
 // Busca de Cliente
 void customer_search(Client *client)

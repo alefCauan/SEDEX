@@ -3,10 +3,11 @@
 #define DELIVERY_H
 
 typedef struct client {
-    int id_cliente;
-    char nome[100];
-    char endereco[200];
-    struct client *proximo;
+    int id_client;
+    char *cpf;
+    char *name;
+    char *address;
+    struct client *next;
 } Client;
 
 // Nó de entrega na rota
@@ -14,48 +15,42 @@ typedef struct deliveries_node {
     Client *cliente;
     int id_entrega;
     int tentativas;
-    char endereco[200];
-    struct deliveries_node *proximo;
+    char *address;
+    struct deliveries_node *next;
 } Deliveries_node;
 
 // Pilha de entregas não efetuadas
 typedef struct deliveries {
-    Deliveries_node *topo;
+    Deliveries_node *top;
 } Deliveries;
 
 // Nó de devolução
 typedef struct devolution_node {
     Client *cliente;
-    int id_entrega;
-    char endereco[200];
-    struct devolution_node *proximo;
+    int id_delivery;
+    char *address;
+    struct devolution_node *next;
 } Devolution_node;
 
 // Fila de devoluções
 typedef struct devolution {
-    Devolution_node *inicio;
-    Devolution_node *fim;
+    Devolution_node *start;
+    Devolution_node *end;
 } Devolution;
 
 // Nó de rota de entregas
 typedef struct route_node {
-    Client *cliente;
-    int id_entrega;
-    char endereco[200];
+    Client *client;
+    int id_delivery;
+    char *address;
     struct route_node *proximo;
 } Route_node;
 
 // Fila de rotas de entregas
 typedef struct route {
-    Route_node *inicio;
-    Route_node *fim;
+    Route_node *start;
+    Route_node *end;
 } Route;
-
-////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////// AUXILIARES ////////////////////////////////////
-
-// checar se um ponteiro está alocado corretamente 
-void check_allocation(void *pointer, const char *mensage); 
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// DEFINES ///////////////////////////////////////
@@ -63,13 +58,39 @@ void check_allocation(void *pointer, const char *mensage);
 #define DELIVERY_FIRST 5 // fez a entrega de primeira
 #define DELIVERY_SECOND 3 // fez a entrega de segunda 
 #define DELIVERY_DEVOLUTION -1 // não fez a entrega 
+#define CPF_LIMIT 5
 #define TRUE 1
 #define FALSE 0
-
+int id_client = 0;
 typedef int BOOL;
 
 ////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////// AUXILIARES ////////////////////////////////////
+
+// checar se um ponteiro está alocado corretamente 
+void check_allocation(void *pointer, const char *mensage);
+// verifica se uma escolha é valida 
+BOOL valid_answer(int min, int max, int answer);
+// verifica se uma string possui digitos
+BOOL contains_digit(const char *str);
+// verifica se uma string possui caracteres 
+BOOL contains_string(const char *str);
+// retorna a quantidade de caracteres de uma string 
+int char_quant(char *str);
+// valida a entrada de um cpf
+BOOL validate_cpf(char *cpf);
+// pega o valor de um numero inteiro 
+int get_int(char *mensage);
+// gera uma string, e valida dependendo do tipo de str
+void get_char(char *mensage, char *str);
+// permite uma string com digitos
+void get_char_digit(char *mensage, char *str);
+
+
+////////////////////////////////////////////////////////////////////////////////
 //////////////////// FUNÇÕES DE ALOCAÇÃO/DESALOCAÇÃO ///////////////////////////
+
+char *alloc_string();
 
 Deliveries_node *alloc_node_deliveries(void);   // alocar node entregas 
 Devolution_node *alloc_node_devolution(void);   // alocar node devolições 
@@ -139,6 +160,7 @@ void menu_client(Client *client);
 void menu_route(Route *route);
 void menu_delivery(Deliveries *deliveries);
 void menu_devolution(Devolution *devolution);
+void menu();
 
 
 #endif
