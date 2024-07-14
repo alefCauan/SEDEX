@@ -147,16 +147,6 @@ Deliveries_node *alloc_node_deliveries()
     return dn;
 }
 
-Devolution_node *alloc_node_devolution() 
-{
-    Devolution_node *dn = (Devolution_node *)malloc(sizeof(Devolution_node));
-    check_allocation(dn, "Devolution_node alloc\n");
-    dn->cliente = alloc_client();
-    dn->address = alloc_string();
-    dn->next = NULL;
-    return dn;
-}
-
 Route_node *alloc_node_route() 
 {
     Route_node *rn = (Route_node *)malloc(sizeof(Route_node));
@@ -209,12 +199,6 @@ void free_node_deliveries(Deliveries_node *dn)
     free(dn);
 }
 
-void free_node_devolution(Devolution_node *dn) 
-{
-    free_client(dn->cliente);
-    free(dn->address);
-    free(dn);
-}
 
 void free_node_route(Route_node *rn) 
 {
@@ -238,8 +222,8 @@ void free_deliveries(Deliveries *d)
 
 void free_devolution(Devolution *d) 
 {
-    Devolution_node *current = d->start;
-    Devolution_node *next;
+    Deliveries_node *current = d->start;
+    Deliveries_node *next;
 
     while (current) 
     {
@@ -318,43 +302,82 @@ void list_route(Route *route)
 {
     printf("null\n");
 }
-
+Deliveries make_delivery(Route *route){
+    undelalloc_deliveries();
+}
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// FUNÇÕES DE ENTREGA /////////////////////////////////
 
 // Adicionar Entrega Não Efetuada na Pilha
-void add_undelivered(Deliveries *deliveries)
-{
-    printf("null\n");
+void add_undelivered(Deliveries *deliveries, Deliveries_node *deliveries_node){
+    if (deliveries->top!=NULL){
+    deliveries_node->next = deliveries->top;
+    deliveries->top = deliveries_node->next; 
+    }else{
+    deliveries->top = deliveries_node;
+}
+
 }
 // Remover Entrega Não Efetuada da Pilha
 void remove_undelivered(Deliveries *deliveries)
-{
-    printf("null\n");
+{  
+    if(deliveries->top!=NULL){
+    Deliveries_node *removed = deliveries->top;
+    deliveries->top = removed->next;
+    return removed; 
+    printf("produto removido");
+    }
+
 }
 // Listar Entregas Não Efetuadas
 void list_unfulfilled_deliveries(Deliveries *deliveries)
 {
-    printf("null\n");
+    Deliveries *aux = deliveries;
+    if (aux->top==NULL)
+    {
+        printf("A lista de não entregues esta vazia!");
+    }
+    printf("Lista de entregas não efetuadas:\n");
+    while (aux->top!=NULL)
+    {
+        printf("-=-=-=-=-=-=-=-\n");
+        printf("Id: ", aux->top->id_entrega);
+        printf("Cliente: ", aux->top->cliente);
+        printf("Endereco: ", aux->top->address);
+        printf("-=-=-=-=-=-=-=-\n");
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// FUNÇÕES DE DEVOLUÇÃO ///////////////////////////////
 
 // Adicionar Devolução na Fila
-void add_devolution(Devolution *devolution)
+void add_devolution(Devolution *devolution, Deliveries_node *deliveries_node)
 {
-    printf("null\n");
+    Deliveries_node *deliveries_node = devolution->end;
 }
 // Remover Devolução da Fila
 void remove_devolution(Devolution *devolution)
 {
-    printf("null\n");
+    Deliveries_node *removed = devolution->end;
+    devolution->end = removed;
+    free_node_devolution(removed);
 }
 
 void list_devolutions(Devolution *devolution)
 {
-    printf("null\n");
+    Deliveries_node *aux = devolution->end;
+    printf("Lista de devolucoes: \n");
+    while (aux!=NULL)
+    {
+        printf("-=-=-=-=-=-=-=-\n");
+        printf("Id: ", aux->id_entrega);
+        printf("Cliente: ", aux->cliente);
+        printf("Endereco: ", aux->address);
+        printf("-=-=-=-=-=-=-=-\n");
+        
+    }
+    
 }
 
 // Funções para exibir os submenus e capturar a escolha do usuário
@@ -442,7 +465,10 @@ void menu_delivery(Deliveries *deliveries)
         switch (choice) 
         {
             case 1:
-                add_undelivered(deliveries);
+                Deliveries_node *node1 = alloc_node_deliveries();
+                printf("digite o endereco:");
+                scanf("%s", node1->address);
+                add_undelivered(deliveries, node1);
                 break;
             case 2:
                 remove_undelivered(deliveries);
@@ -473,7 +499,10 @@ void menu_devolution(Devolution *devolution)
 
         switch (choice) {
             case 1:
-                add_devolution(devolution);
+                Deliveries_node *node1 = alloc_node_deliveries();
+                printf("digite o endereco:");
+                scanf("%s", node1->address);
+                add_devolution(devolution, node1);
                 break;
             case 2:
                 remove_devolution(devolution);

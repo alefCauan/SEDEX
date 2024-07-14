@@ -24,18 +24,10 @@ typedef struct deliveries {
     Deliveries_node *top;
 } Deliveries;
 
-// Nó de devolução
-typedef struct devolution_node {
-    Client *cliente;
-    int id_delivery;
-    char *address;
-    struct devolution_node *next;
-} Devolution_node;
-
 // Fila de devoluções
 typedef struct devolution {
-    Devolution_node *start;
-    Devolution_node *end;
+    Deliveries_node *start;
+    Deliveries_node *end;
 } Devolution;
 
 // Nó de rota de entregas
@@ -93,7 +85,6 @@ void get_char_digit(char *mensage, char *str);
 char *alloc_string();
 
 Deliveries_node *alloc_node_deliveries(void);   // alocar node entregas 
-Devolution_node *alloc_node_devolution(void);   // alocar node devolições 
 Route_node *alloc_node_route(void);        // alocar node rota
 
 Client *alloc_client(void); // alocar cliente
@@ -102,7 +93,7 @@ Devolution *alloc_devolution(void); // alocar devolições
 Route *alloc_route(void);  // alocar rota
 
 void free_node_deliveries(Deliveries_node *dn);
-void free_node_devolution(Devolution_node *dn);
+
 void free_node_route(Route_node *rn);
 
 void free_client(Client *c);
@@ -137,7 +128,7 @@ void list_route(Route *route);
 /////////////////////////// FUNÇÕES DE ENTREGA /////////////////////////////////
 
 // Adicionar Entrega Não Efetuada na Pilha
-void add_undelivered(Deliveries *deliveries);
+void add_undelivered(Deliveries *deliveries, Deliveries_node *deliveries_node);
 // Remover Entrega Não Efetuada da Pilha
 void remove_undelivered(Deliveries *deliveries);
 // Listar Entregas Não Efetuadas
@@ -147,7 +138,7 @@ void list_unfulfilled_deliveries(Deliveries *deliveries);
 /////////////////////////// FUNÇÕES DE DEVOLUÇÃO ///////////////////////////////
 
 // Adicionar Devolução na Fila
-void add_devolution(Devolution *devolution);
+void add_devolution(Devolution *devolution, Deliveries_node *deliveries_node);
 // Remover Devolução da Fila
 void remove_devolution(Devolution *devolution);
 // listar devoluções
