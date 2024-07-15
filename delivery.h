@@ -13,8 +13,8 @@ typedef struct client {
 // Nó de entrega na rota
 typedef struct deliveries_node {
     Client *cliente;
-    int id_entrega;
-    int tentativas;
+    int id_delivery;
+    int attempts;
     char *address;
     struct deliveries_node *next;
 } Deliveries_node;
@@ -44,6 +44,17 @@ typedef struct route {
     Route_node *end;
 } Route;
 
+typedef struct aux
+{
+    int id;
+    int opt;
+    int attempts;
+    char name[100];
+    char addres[100];
+    char cpf[100];
+}Aux;
+
+
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// DEFINES ///////////////////////////////////////
 
@@ -70,7 +81,7 @@ BOOL contains_string(const char *str);
 // retorna a quantidade de caracteres de uma string 
 int char_quant(char *str);
 // valida a entrada de um cpf
-BOOL validate_cpf(char *cpf);
+BOOL validate_cpf(Client *head, char *cpf);
 // pega o valor de um numero inteiro 
 int get_int(char *mensage);
 // gera uma string, e valida dependendo do tipo de str
@@ -105,7 +116,6 @@ void free_route(Route *r);
 /////////////////////////// FUNÇÕES DE PEDIDO //////////////////////////////////
 
 // Cadastro de Clientes
-void customer_register();
 void customer_register(Client *client);
 // Busca de Cliente
 void customer_search(Client *client);
