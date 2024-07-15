@@ -699,6 +699,7 @@ void menu()
     free(devolution);
 }
 
+
 int main()
 {
     menu();
