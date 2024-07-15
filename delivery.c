@@ -494,19 +494,20 @@ void remove_undelivered(Deliveries *deliveries)
 // Listar Entregas Não Efetuadas
 void list_unfulfilled_deliveries(Deliveries *deliveries)
 {
-    Deliveries *aux = deliveries;
-    if (aux->top==NULL)
+    Deliveries_node *aux = deliveries->top;
+    if (aux==NULL)
     {
         printf("A lista de não entregues esta vazia!");
     }
     printf("Lista de entregas não efetuadas:\n");
-    while (aux->top!=NULL)
+    while (aux!=NULL)
     {
         printf("-=-=-=-=-=-=-=-\n");
-        printf("Id: ", aux->top->id_entrega);
-        printf("Cliente: ", aux->top->cliente);
-        printf("Endereco: ", aux->top->address);
+        printf("Id: ", aux->id_delivery);
+        printf("Cliente: ", aux->cliente);
+        printf("Endereco: ", aux->address);
         printf("-=-=-=-=-=-=-=-\n");
+        aux= aux->next;
     }
 }
 
@@ -533,11 +534,11 @@ void list_devolutions(Devolution *devolution)
     while (aux!=NULL)
     {
         printf("-=-=-=-=-=-=-=-\n");
-        printf("Id: ", aux->id_entrega);
+        printf("Id: ", aux->id_delivery);
         printf("Cliente: ", aux->cliente);
         printf("Endereco: ", aux->address);
         printf("-=-=-=-=-=-=-=-\n");
-        
+        aux = aux->next;
     }
     
 }
