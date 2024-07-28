@@ -12,10 +12,9 @@ typedef struct client {
 
 // Nó de entrega na rota
 typedef struct deliveries_node {
-    Client *cliente;
+    Client *client;
     int id_delivery;
     int attempts;
-    char *address;
     struct deliveries_node *next;
 } Deliveries_node;
 
@@ -24,18 +23,11 @@ typedef struct deliveries {
     Deliveries_node *top;
 } Deliveries;
 
-// Fila de devoluções
-typedef struct devolution {
-    Deliveries_node *start;
-    Deliveries_node *end;
-} Devolution;
-
 // Nó de rota de entregas
 typedef struct route_node {
     Client *client;
     int id_delivery;
-    char *address;
-    struct route_node *proximo;
+    struct route_node *next;
 } Route_node;
 
 // Fila de rotas de entregas
@@ -43,6 +35,13 @@ typedef struct route {
     Route_node *start;
     Route_node *end;
 } Route;
+
+// Fila de devoluções
+typedef struct devolution {
+    Route_node *start;
+    Route_node *end;
+} Devolution;
+
 
 typedef struct aux
 {
@@ -104,7 +103,6 @@ Devolution *alloc_devolution(void); // alocar devolições
 Route *alloc_route(void);  // alocar rota
 
 void free_node_deliveries(Deliveries_node *dn);
-
 void free_node_route(Route_node *rn);
 
 void free_client(Client *c);

@@ -151,8 +151,7 @@ Deliveries_node *alloc_node_deliveries()
 {
     Deliveries_node *dn = (Deliveries_node *)malloc(sizeof(Deliveries_node));
     check_allocation(dn, "Deliveries_node alloc\n");
-    dn->cliente = alloc_client();
-    dn->address = alloc_string();
+    dn->client = alloc_client();
     dn->next = NULL;
     return dn;
 }
@@ -162,8 +161,7 @@ Route_node *alloc_node_route()
     Route_node *rn = (Route_node *)malloc(sizeof(Route_node));
     check_allocation(rn, "Route_node alloc\n");
     rn->client = alloc_client();
-    rn->address = alloc_string();
-    rn->proximo = NULL;
+    rn->next = NULL;
     return rn;
 }
 
@@ -196,66 +194,78 @@ Route *alloc_route()
 
 void free_client(Client *c) 
 {
-    free(c->cpf);
-    free(c->name);
-    free(c->address);
-    free(c);
+    if (c) 
+    {
+        free(c->cpf);
+        free(c->name);
+        free(c->address);
+        free(c);
+    }
 }
 
 void free_node_deliveries(Deliveries_node *dn) 
 {
-    free_client(dn->cliente);
-    free(dn->address);
-    free(dn);
+    if (dn) 
+    {
+        free_client(dn->client);
+        free(dn);
+    }
 }
-
 
 void free_node_route(Route_node *rn) 
 {
-    free_client(rn->client);
-    free(rn->address);
-    free(rn);
+    if (rn) 
+    {
+        free_client(rn->client);;
+        free(rn);
+    }
 }
 
 void free_deliveries(Deliveries *d) 
 {
-    Deliveries_node *current = d->top;
-    Deliveries_node *next;
-
-    while (current) {
-        next = current->next;
-        free_node_deliveries(current);
-        current = next;
-    }
-    free(d);
-}
-
-void free_devolution(Devolution *d) 
-{
-    Deliveries_node *current = d->start;
-    Deliveries_node *next;
-
-    while (current) 
+    if (d) 
     {
-        next = current->next;
-        free_node_devolution(current);
-        current = next;
+        Deliveries_node *current = d->top;
+        while (current) 
+        {
+            Deliveries_node *next = current->next;
+            free_node_deliveries(current);
+            current = next;
+        }
+        free(d);
     }
-    free(d);
 }
 
 void free_route(Route *r) 
 {
-    Route_node *current = r->start;
-    Route_node *next;
-
-    while (current) {
-        next = current->proximo;
-        free_node_route(current);
-        current = next;
+    if (r) 
+    {
+        Route_node *current = r->start;
+        while (current) 
+        {
+            Route_node *next = current->next;
+            free_node_route(current);
+            current = next;
+        }
+        free(r);
     }
-    free(r);
 }
+
+void free_devolution(Devolution *d) 
+{
+    if (d) 
+    {
+        Route_node *current = d->start;
+        while (current) 
+        {
+            Route_node *next = current->next;
+            free_node_route(current);
+            current = next;
+        }
+        free(d);
+    }
+}
+
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -465,7 +475,7 @@ void list_route(Route *route)
     printf("null\n");
 }
 Deliveries make_delivery(Route *route){
-    undelalloc_deliveries();
+    alloc_deliveries();
 }
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// FUNÇÕES DE ENTREGA /////////////////////////////////
@@ -483,31 +493,27 @@ void add_undelivered(Deliveries *deliveries, Deliveries_node *deliveries_node){
 // Remover Entrega Não Efetuada da Pilha
 void remove_undelivered(Deliveries *deliveries)
 {  
-    if(deliveries->top!=NULL){
-    Deliveries_node *removed = deliveries->top;
-    deliveries->top = removed->next;
-    return removed; 
-    printf("produto removido");
+    if(deliveries->top!=NULL)
+    {
+        Deliveries_node *removed = deliveries->top;
+        deliveries->top = removed->next;
+        printf("produto removido");
+        // return removed; 
     }
-
 }
 // Listar Entregas Não Efetuadas
 void list_unfulfilled_deliveries(Deliveries *deliveries)
 {
     Deliveries_node *aux = deliveries->top;
     if (aux==NULL)
-    {
         printf("A lista de não entregues esta vazia!");
-    }
+    
     printf("Lista de entregas não efetuadas:\n");
     while (aux!=NULL)
     {
         printf("-=-=-=-=-=-=-=-\n");
-        printf("Id: ", aux->id_delivery);
-        printf("Cliente: ", aux->cliente);
-        printf("Endereco: ", aux->address);
-        printf("-=-=-=-=-=-=-=-\n");
-        aux= aux->next;
+        print_client(*aux->client);
+        aux = aux->next;
     }
 }
 
@@ -517,26 +523,36 @@ void list_unfulfilled_deliveries(Deliveries *deliveries)
 // Adicionar Devolução na Fila
 void add_devolution(Devolution *devolution, Deliveries_node *deliveries_node)
 {
-    Deliveries_node *deliveries_node = devolution->end;
+    printf("a");
 }
 // Remover Devolução da Fila
-void remove_devolution(Devolution *devolution)
+void remove_devolution(Devolution *devolution) 
 {
-    Deliveries_node *removed = devolution->end;
-    devolution->end = removed;
-    free_node_devolution(removed);
+    if (devolution->start == NULL) {
+        printf("Nenhuma devolução para remover.\n");
+        return;
+    }
+
+    Route_node *removed = devolution->start;
+    devolution->start = removed->next;
+    
+    if (devolution->start == NULL) 
+        devolution->end = NULL;
+
+    free_node_route(removed);
+    printf("Devolução removida com sucesso.\n");
 }
+
 
 void list_devolutions(Devolution *devolution)
 {
-    Deliveries_node *aux = devolution->end;
+    Route_node *aux = devolution->end;
     printf("Lista de devolucoes: \n");
     while (aux!=NULL)
     {
         printf("-=-=-=-=-=-=-=-\n");
-        printf("Id: ", aux->id_delivery);
-        printf("Cliente: ", aux->cliente);
-        printf("Endereco: ", aux->address);
+        printf("Id: %d", aux->id_delivery);
+        print_client(*aux->client);
         printf("-=-=-=-=-=-=-=-\n");
         aux = aux->next;
     }
@@ -630,7 +646,7 @@ void menu_delivery(Deliveries *deliveries)
             case 1:
                 Deliveries_node *node1 = alloc_node_deliveries();
                 printf("digite o endereco:");
-                scanf("%s", node1->address);
+                scanf("%s", node1->client->address);
                 add_undelivered(deliveries, node1);
                 break;
             case 2:
@@ -664,7 +680,7 @@ void menu_devolution(Devolution *devolution)
             case 1:
                 Deliveries_node *node1 = alloc_node_deliveries();
                 printf("digite o endereco:");
-                scanf("%s", node1->address);
+                scanf("%s", node1->client->address);
                 add_devolution(devolution, node1);
                 break;
             case 2:
