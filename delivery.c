@@ -4,6 +4,7 @@
 #include <string.h>
 #include <ctype.h> 
 #include <errno.h>
+#include <time.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// AUXILIARES ////////////////////////////////////
@@ -94,7 +95,7 @@ BOOL validate_cpf(Client *head, char *cpf)
 int get_int(char *mensage)
 {
     int value;
-    printf("DIGITE %s ->", mensage);
+    printf("DIGITE %s -> ", mensage);
     scanf("%d", &value);
 
     return value;
@@ -126,6 +127,22 @@ void get_char_digit(char *mensage, char *str)
     
     strcpy(str, value);
 }
+
+int random_choice(int min, int max)
+{
+    srand(time(NULL));
+    int num;
+
+    if (min > max) 
+        return NULL;
+
+    num = rand() % max;
+    if(num < min)
+        num += min;
+
+    return num;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////// FUNÇÕES DE ALOCAÇÃO/DESALOCAÇÃO ///////////////////////////
@@ -192,7 +209,7 @@ Route *alloc_route()
 
 ////////////////////////////////////////////////////
 
-void free_client(Client *c) 
+void free_client_node(Client *c) 
 {
     if (c) 
     {
@@ -207,7 +224,8 @@ void free_node_deliveries(Deliveries_node *dn)
 {
     if (dn) 
     {
-        free_client(dn->client);
+        // if(dn->client)
+        //     free_client_node(dn->client);
         free(dn);
     }
 }
@@ -216,7 +234,8 @@ void free_node_route(Route_node *rn)
 {
     if (rn) 
     {
-        free_client(rn->client);;
+        // if(rn->client)
+        //     free_client_node(rn->client);
         free(rn);
     }
 }
@@ -266,18 +285,41 @@ void free_devolution(Devolution *d)
     }
 }
 
+void free_client(Client *head) 
+{
+    Client *current = head;
+    Client *next_client;
+
+    while (current != NULL) 
+    {
+        next_client = current->next; 
+        free_client_node(current);
+        current = next_client;
+    }
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// FUNÇÕES DE PEDIDO //////////////////////////////////
 
-// mostra um cliente espesifico
+// mostra um cliente especifico
 void print_client(Client client)
 {
     printf("Nome: %s\n", client.name);
     printf("CPF: %s\n", client.cpf);
     printf("Endereço: %s\n", client.address);
     printf("ID: %d\n", client.id_client);
+}
+
+// Listagem de Clientes
+void customer_list(Client *head) 
+{
+    Client *aux = head->next;
+    while (aux) 
+    {
+        print_client(*aux);
+        aux = aux->next;
+    }
 }
 
 // Cadastro de Clientes
@@ -295,10 +337,10 @@ void customer_register(Client *head)
     get_char("o nome do cliente", new_client->name);
     get_char("o endereco do cliente", new_client->address);
 
-
     new_client->id_client = id_client;
     id_client += 1;
     aux->next = new_client;
+    cont_client += 1;
 }
 
 // Busca de Cliente
@@ -316,7 +358,7 @@ void customer_search(Client *head)
             printf("[0] - VOLTAR\n");
             aux.opt = get_int("sua escolha");
         } 
-        while (!valid_answer(0, 2, aux.opt));
+        while(!valid_answer(0, 2, aux.opt));
 
         if (aux.opt == 0) break;
 
@@ -408,8 +450,9 @@ void client_removal(Client *head)
                 if (aux.id == aux_client->id_client) 
                 {
                     previous->next = aux_client->next;
-                    free_client(aux_client);
+                    free_client_node(aux_client);
                     printf("Cliente removido com sucesso.\n");
+                    cont_client -= 1;
                     return;
                 }
                 previous = aux_client;
@@ -419,7 +462,7 @@ void client_removal(Client *head)
         case 2:
             aux_client = head->next;
             previous = head;
-
+            
             do {
                 get_char_digit("o cpf do cliente", aux.cpf);
             } 
@@ -430,8 +473,9 @@ void client_removal(Client *head)
                 if (strcmp(aux.cpf, aux_client->cpf) == 0) 
                 {
                     previous->next = aux_client->next;
-                    free_client(aux_client);
+                    free_client_node(aux_client);
                     printf("Cliente removido com sucesso.\n");
+                    cont_client -= 1;
                     return;
                 }
                 previous = aux_client;
@@ -445,25 +489,72 @@ void client_removal(Client *head)
     }
 }
 
-// Listagem de Clientes
-void customer_list(Client *head) 
-{
-    Client *aux = head->next;
-    while (aux) 
-    {
-        print_client(*aux);
-        aux = aux->next;
-    }
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// FUNÇÕES DE ROTA ////////////////////////////////////
 
-// Adicionar Entrega na Rota
-void add_delivery_route(Route *route)
+void choose_product(Itens *item) 
 {
-    printf("null\n");
+    Aux aux = {0};
+
+    // for (int i = 0; i < NUM_PRODUCTS; i += 2) 
+    // {
+    //     printf("[%2d] - %13s ", i, products_text[i]);
+    //     printf("| [%2d] - %13s\n", i + 1, products_text[i + 1]);
+
+    // }
+
+    // do{
+    //     if(aux.attempts > 0)
+    //         printf("Escolha inválida. Por favor, tente novamente\n");
+        
+    //     aux.opt = get_int("Digite o número do produto desejado");
+    //     aux.attempts += 1;
+    // } 
+    // while(!valid_answer(1, NUM_PRODUCTS - 1, aux.opt));
+
+    aux.opt = random_choice(0, NUM_PRODUCTS);
+    
+    item->product = aux.opt;
+    item->price = products_prices[aux.opt];
+    strcpy(item->name, products_text[aux.opt]);
 }
+
+// Adicionar Entrega na Rota
+void add_delivery_route(Route *route, Client *client) 
+{
+    if(cont_client < 1)
+        return;
+
+    Client *aux = client;
+    int client_index = random_choice(1, cont_client);
+
+    for(int i = 0; i < client_index - 1; i++)
+        aux = aux->next;
+
+
+    Route_node *new_node = (Route_node *)malloc(sizeof(Route_node));
+    check_allocation(new_node, "Route node");
+
+    new_node->client = aux;
+    choose_product(&new_node->item);
+    new_node->id_delivery = (route->end) ? route->end->id_delivery + 1 : 1;
+    new_node->next = NULL;
+
+    if(!route->start) 
+    {
+        route->start = new_node;
+        route->end = new_node;
+    } 
+    else 
+    {
+        route->end->next = new_node;
+        route->end = new_node;
+    }
+
+    printf("Entrega adicionada: Cliente %s, Produto %s, Preço R$%.2f, ID Entrega %d\n",
+           new_node->client->name, new_node->item.name, new_node->item.price, new_node->id_delivery);
+}
+
 // Remover Entrega da Rota
 void remove_delivery_route(Route *route)
 {
@@ -474,22 +565,25 @@ void list_route(Route *route)
 {
     printf("null\n");
 }
-Deliveries make_delivery(Route *route){
-    alloc_deliveries();
-}
+// Deliveries *make_delivery(Route *route){
+//    printf("a");
+//    return route;
+// }
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// FUNÇÕES DE ENTREGA /////////////////////////////////
 
 // Adicionar Entrega Não Efetuada na Pilha
-void add_undelivered(Deliveries *deliveries, Deliveries_node *deliveries_node){
-    if (deliveries->top!=NULL){
-    deliveries_node->next = deliveries->top;
-    deliveries->top = deliveries_node->next; 
-    }else{
-    deliveries->top = deliveries_node;
+void add_undelivered(Deliveries *deliveries, Deliveries_node *deliveries_node)
+{
+    if (deliveries->top!=NULL)
+    {
+        deliveries_node->next = deliveries->top;
+        deliveries->top = deliveries_node->next; 
+    }
+    else
+        deliveries->top = deliveries_node;
 }
 
-}
 // Remover Entrega Não Efetuada da Pilha
 void remove_undelivered(Deliveries *deliveries)
 {  
@@ -597,7 +691,7 @@ void menu_client(Client *client)
     } while (choice != 0);
 }
 
-void menu_route(Route *route) 
+void menu_route(Route *route, Client *client) 
 {
     int choice;
     do {
@@ -612,7 +706,7 @@ void menu_route(Route *route)
         switch (choice) 
         {
             case 1:
-                add_delivery_route(route);
+                add_delivery_route(route, client);
                 break;
             case 2:
                 remove_delivery_route(route);
@@ -723,7 +817,7 @@ void menu()
                 menu_client(client);
                 break;
             case 2:
-                menu_route(route);
+                menu_route(route, client);
                 break;
             case 3:
                 menu_delivery(deliveries);
@@ -748,6 +842,18 @@ void menu()
 
 int main()
 {
-    menu();
+    Client *client = alloc_client();
+    Route *rota = alloc_route();
+    
+    customer_register(client);
+    // customer_register(client);
+    // customer_register(client);
+    add_delivery_route(rota, client->next);
+    add_delivery_route(rota, client->next);
+    add_delivery_route(rota, client->next);
+    
+    free_route(rota);
+    free_client(client->next);
+
     return 0;
 }
