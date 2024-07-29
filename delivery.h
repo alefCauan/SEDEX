@@ -2,6 +2,80 @@
 #ifndef DELIVERY_H
 #define DELIVERY_H
 
+// enum contendo os valores do produtos
+typedef enum product {
+    LAPTOP,
+    SMARTPHONE,
+    TABLET,
+    HEADPHONES,
+    SMARTWATCH,
+    CAMERA,
+    TV,
+    MONITOR,
+    KEYBOARD,
+    MOUSE,
+    PRINTER,
+    ROUTER,
+    SPEAKER,
+    GAMING_CONSOLE,
+    USB_DRIVE,
+    EXTERNAL_HDD,
+    SSD,
+    GRAPHICS_CARD,
+    MOTHERBOARD,
+    PROCESSOR,
+    NUM_PRODUCTS
+} Product;
+
+// nomes de todos os produtos
+static const char *products_text[] = {
+    "Laptop",
+    "Smartphone",
+    "Tablet",
+    "Headphones",
+    "Smartwatch",
+    "Camera",
+    "TV",
+    "Monitor",
+    "Keyboard",
+    "Mouse",
+    "Printer",
+    "Router",
+    "Speaker",
+    "Gaming Console",
+    "USB Drive",
+    "External HDD",
+    "SSD",
+    "Graphics Card",
+    "Motherboard",
+    "Processor"
+};
+
+// Array de preços dos produtos
+static const float products_prices[] = {
+    1500.0,  // Laptop
+    800.0,   // Smartphone
+    300.0,   // Tablet
+    100.0,   // Headphones
+    200.0,   // Smartwatch
+    500.0,   // Camera
+    1000.0,  // TV
+    250.0,   // Monitor
+    50.0,    // Keyboard
+    30.0,    // Mouse
+    120.0,   // Printer
+    80.0,    // Router
+    150.0,   // Speaker
+    400.0,   // Gaming Console
+    20.0,    // USB Drive
+    70.0,    // External HDD
+    90.0,    // SSD
+    300.0,   // Graphics Card
+    200.0,   // Motherboard
+    250.0    // Processor
+};
+
+// struct que representa o cliente
 typedef struct client {
     int id_client;
     char *cpf;
@@ -10,12 +84,18 @@ typedef struct client {
     struct client *next;
 } Client;
 
+typedef struct itens {
+    Product product;
+    char name[20];
+    float price;
+} Itens;
+
 // Nó de entrega na rota
 typedef struct deliveries_node {
-    Client *cliente;
+    Client *client;
+    Itens item;
     int id_delivery;
     int attempts;
-    char *address;
     struct deliveries_node *next;
 } Deliveries_node;
 
@@ -24,18 +104,12 @@ typedef struct deliveries {
     Deliveries_node *top;
 } Deliveries;
 
-// Fila de devoluções
-typedef struct devolution {
-    Deliveries_node *start;
-    Deliveries_node *end;
-} Devolution;
-
 // Nó de rota de entregas
 typedef struct route_node {
     Client *client;
+    Itens item;
     int id_delivery;
-    char *address;
-    struct route_node *proximo;
+    struct route_node *next;
 } Route_node;
 
 // Fila de rotas de entregas
@@ -43,6 +117,13 @@ typedef struct route {
     Route_node *start;
     Route_node *end;
 } Route;
+
+// Fila de devoluções
+typedef struct devolution {
+    Route_node *start;
+    Route_node *end;
+} Devolution;
+
 
 typedef struct aux
 {
@@ -65,6 +146,7 @@ typedef struct aux
 #define TRUE 1
 #define FALSE 0
 int id_client = 0;
+int cont_client = 0;
 typedef int BOOL;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -88,6 +170,8 @@ int get_int(char *mensage);
 void get_char(char *mensage, char *str);
 // permite uma string com digitos
 void get_char_digit(char *mensage, char *str);
+// fazer uma escolha aleatoria entre os parametros
+int random_choice(int min, int max);
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -103,8 +187,9 @@ Deliveries *alloc_deliveries(void); // alocar entregas
 Devolution *alloc_devolution(void); // alocar devolições 
 Route *alloc_route(void);  // alocar rota
 
-void free_node_deliveries(Deliveries_node *dn);
 
+void free_client_node(Client *c);
+void free_node_deliveries(Deliveries_node *dn);
 void free_node_route(Route_node *rn);
 
 void free_client(Client *c);
@@ -128,7 +213,7 @@ void customer_List(Client *client);
 /////////////////////////// FUNÇÕES DE ROTA ////////////////////////////////////
 
 // Adicionar Entrega na Rota
-void add_delivery_route(Route *route);
+void add_delivery_route(Route *route, Client *client);
 // Remover Entrega da Rota
 void remove_delivery_route(Route *route);
 // Listar Entregas na Rota
@@ -158,7 +243,7 @@ void list_devolutions(Devolution *devolution);
 //////////////////////////// FUNÇÕES DE MENU ///////////////////////////////////
  
 void menu_client(Client *client);
-void menu_route(Route *route);
+void menu_route(Route *route, Client *client);
 void menu_delivery(Deliveries *deliveries);
 void menu_devolution(Devolution *devolution);
 void menu();
