@@ -10,7 +10,9 @@
 //////////////////////////////// AUXILIARES ////////////////////////////////////
 
 // int vector_position(int largura, int i, int j) {return largura * i + j;}
-
+void initialize_random() {
+    srand(time(NULL));
+}
 // checar se um ponteiro está alocado corretamente 
 void check_allocation(void *pointer, const char *mensage) 
 {
@@ -130,16 +132,16 @@ void get_char_digit(char *mensage, char *str)
 
 int random_choice(int min, int max)
 {
-    srand(time(NULL));
-    int num;
-
     if (min > max) 
-        return NULL;
+        return 1;
 
-    num = rand() % max;
+    int num = min + rand() % (max - min + 1);
+
+    
     if(num < min)
         num += min;
 
+    printf("Num aleatorio: %d\n", num);
     return num;
 }
 
@@ -511,12 +513,12 @@ void choose_product(Itens *item)
     //     aux.attempts += 1;
     // } 
     // while(!valid_answer(1, NUM_PRODUCTS - 1, aux.opt));
-
     aux.opt = random_choice(0, NUM_PRODUCTS);
-    
+    printf("product: %d\n", aux.opt);
     item->product = aux.opt;
     item->price = products_prices[aux.opt];
     strcpy(item->name, products_text[aux.opt]);
+
 }
 
 // Adicionar Entrega na Rota
@@ -527,7 +529,7 @@ void add_delivery_route(Route *route, Client *client)
 
     Client *aux = client;
     int client_index = random_choice(1, cont_client);
-
+    printf("client: %d\n", client_index);
     for(int i = 0; i < client_index - 1; i++)
         aux = aux->next;
 
@@ -551,19 +553,48 @@ void add_delivery_route(Route *route, Client *client)
         route->end = new_node;
     }
 
-    printf("Entrega adicionada: Cliente %s, Produto %s, Preço R$%.2f, ID Entrega %d\n",
-           new_node->client->name, new_node->item.name, new_node->item.price, new_node->id_delivery);
+    // printf("Entrega adicionada: Cliente %s, Produto %s, Preço R$%.2f, ID Entrega %d\n",
+    //        new_node->client->name, new_node->item.name, new_node->item.price, new_node->id_delivery);
 }
 
 // Remover Entrega da Rota
-void remove_delivery_route(Route *route)
+void remove_delivery_route(Route *route) 
 {
-    printf("null\n");
+    if (route->start == NULL) 
+    {
+        printf("Nenhuma entrega para remover.\n");
+        return;
+    }
+
+    Route_node *removed = route->start;
+    route->start = removed->next;
+
+    if (route->start == NULL) 
+        route->end = NULL;
+
+    printf("Entrega removida: Cliente %s, Produto %s, Preço R$%.2f, ID Entrega %d\n",
+           removed->client->name, removed->item.name, removed->item.price, removed->id_delivery);
+
+    free(removed);
 }
+
 // Listar Entregas na Rota
-void list_route(Route *route)
+void list_route(Route *route) 
 {
-    printf("null\n");
+    if (route->start == NULL) 
+    {
+        printf("A rota de entregas está vazia.\n");
+        return;
+    }
+
+    Route_node *current = route->start;
+    printf("Lista de entregas na rota:\n");
+    while (current != NULL) 
+    {
+        printf("ID Entrega: %d, Cliente: %s, Produto: %s, Preço: R$%.2f\n",
+               current->id_delivery, current->client->name, current->item.name, current->item.price);
+        current = current->next;
+    }
 }
 // Deliveries *make_delivery(Route *route){
 //    printf("a");
@@ -842,15 +873,20 @@ void menu()
 
 int main()
 {
+    initialize_random();
     Client *client = alloc_client();
     Route *rota = alloc_route();
-    
+    customer_register(client);
     customer_register(client);
     // customer_register(client);
-    // customer_register(client);
     add_delivery_route(rota, client->next);
     add_delivery_route(rota, client->next);
     add_delivery_route(rota, client->next);
+    add_delivery_route(rota, client->next);
+
+    list_route(rota);
+    remove_delivery_route(rota);
+    list_route(rota);
     
     free_route(rota);
     free_client(client->next);
