@@ -175,6 +175,14 @@ Deliveries_node *alloc_node_deliveries()
     return dn;
 }
 
+Deliveries *alloc_deliveries() 
+{
+    Deliveries *d = (Deliveries *)malloc(sizeof(Deliveries));
+    check_allocation(d, "Deliveries alloc\n");
+    d->top = NULL;
+    return d;
+}
+
 Route_node *alloc_node_route() 
 {
     Route_node *rn = (Route_node *)malloc(sizeof(Route_node));
@@ -184,22 +192,6 @@ Route_node *alloc_node_route()
     return rn;
 }
 
-Deliveries *alloc_deliveries() 
-{
-    Deliveries *d = (Deliveries *)malloc(sizeof(Deliveries));
-    check_allocation(d, "Deliveries alloc\n");
-    d->top = NULL;
-    return d;
-}
-
-Devolution *alloc_devolution() {
-    Devolution *d = (Devolution *)malloc(sizeof(Devolution));
-    check_allocation(d, "Devolution alloc\n");
-    d->start = NULL;
-    d->end = NULL;
-    return d;
-}
-
 Route *alloc_route() 
 {
     Route *r = (Route *)malloc(sizeof(Route));
@@ -207,6 +199,26 @@ Route *alloc_route()
     r->start = NULL;
     r->end = NULL;
     return r;
+}
+
+Devolution_node *alloc_node_devolution()
+{
+    Devolution_node *dn = (Devolution_node *)malloc(sizeof(Devolution_node));
+    check_allocation(dn, "Devolution node alloc");
+    dn->route = alloc_node_route();
+    dn->next = NULL;
+
+    return dn;
+}
+
+Devolution *alloc_devolution() 
+{
+    Devolution *d = (Devolution *)malloc(sizeof(Devolution));
+    check_allocation(d, "Devolution alloc");
+    d->start = NULL;
+    d->end = NULL;
+
+    return d;
 }
 
 ////////////////////////////////////////////////////
@@ -252,7 +264,6 @@ void free_node_deliveries(Deliveries_node *dn)
     }
 }
 
-
 void free_deliveries(Deliveries *d) 
 {
     if (d) 
@@ -268,15 +279,21 @@ void free_deliveries(Deliveries *d)
     }
 }
 
+void free_node_devolution(Devolution_node *node)
+{
+    if(node)
+        free_node_route(node->route);
+}
+
 void free_devolution(Devolution *d) 
 {
     if (d) 
     {
-        Route_node *current = d->start;
+        Devolution_node *current = d->start;
         while (current) 
         {
-            Route_node *next = current->next;
-            free_node_route(current);
+            Devolution_node *next = current->next;
+            free_node_route(current->route);
             current = next;
         }
         free(d);
@@ -640,48 +657,86 @@ void list_unfulfilled_deliveries(Deliveries *deliveries)
         print_client(*deliveries->top->route_node->client);
         aux = aux->next;
     }
+
+    free_node_deliveries(aux);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// FUNÇÕES DE DEVOLUÇÃO ///////////////////////////////
 
 // Adicionar Devolução na Fila
-void add_devolution(Devolution *devolution, Deliveries_node *deliveries_node)
+void add_devolution(Devolution *devolution, Deliveries *deliveries) 
 {
-    printf("a");
+    if (is_empty(deliveries)) 
+    {
+        fprintf(stderr, "Stack de deliveries está vazio\n");
+        return;
+    }
+
+    while (!is_empty(deliveries)) 
+    {
+        Route_node *route_node = deliveries->top->route_node;
+
+        // Se as tentativas forem menores que 2, apenas remova da pilha
+        if (route_node->attempts < 2) 
+        {
+            Deliveries_node *temp = deliveries->top;
+            deliveries->top = deliveries->top->next;
+            free_node_deliveries(temp);
+            continue;
+        }
+        // Aloca um novo nó de devolução
+        Devolution_node *new_node = alloc_node_devolution();
+        new_node->route = route_node;
+
+        if (!devolution->start) 
+        {
+            devolution->start = new_node;
+            devolution->end = new_node;
+        } 
+        else 
+        {
+            devolution->end->next = new_node;
+            devolution->end = new_node;
+        }
+
+        deliveries->top = deliveries->top->next;
+    }
+
+    printf("Todas as entregas não efetuadas foram movidas para a fila de devoluções.\n");
 }
 // Remover Devolução da Fila
 void remove_devolution(Devolution *devolution) 
 {
-    if (devolution->start == NULL) {
+    if (devolution->start == NULL) 
+    {
         printf("Nenhuma devolução para remover.\n");
         return;
     }
 
-    Route_node *removed = devolution->start;
+    Devolution_node *removed = devolution->start;
     devolution->start = removed->next;
     
     if (devolution->start == NULL) 
         devolution->end = NULL;
 
-    free_node_route(removed);
+    free_node_devolution(removed);
     printf("Devolução removida com sucesso.\n");
 }
 
 
 void list_devolutions(Devolution *devolution)
 {
-    Route_node *aux = devolution->end;
+    Devolution_node *aux = devolution->start;
     printf("Lista de devolucoes: \n");
-    while (aux!=NULL)
+
+    while (aux != NULL)
     {
         printf("-=-=-=-=-=-=-=-\n");
-        printf("Id: %d", aux->id_delivery);
-        print_client(*aux->client);
+        print_client(*aux->route->client);
         printf("-=-=-=-=-=-=-=-\n");
         aux = aux->next;
     }
-    
 }
 
 // Funções para exibir os submenus e capturar a escolha do usuário
@@ -806,7 +861,7 @@ void menu_devolution(Devolution *devolution)
                 Deliveries_node *node1 = alloc_node_deliveries();
                 printf("digite o endereco:");
                 // scanf("%s", node1->client->address);
-                add_devolution(devolution, node1);
+                // add_devolution(devolution, node1);
                 break;
             case 2:
                 remove_devolution(devolution);
@@ -823,86 +878,15 @@ void menu_devolution(Devolution *devolution)
     } while (choice != 0);
 }
 
-// Função para exibir o menu principal e capturar a escolha do usuário
-void menu() 
+int main() 
 {
-    int choice;
-    Client *client = alloc_client();
-    Route *route = alloc_route();
-    Deliveries *deliveries = alloc_deliveries();
-    Devolution *devolution = alloc_devolution();
-
-    do {
-        printf("\n==== MENU PRINCIPAL ====\n");
-        printf("1. Menu Clientes\n");
-        printf("2. Menu Rotas\n");
-        printf("3. Menu Entregas Não Efetuadas\n");
-        printf("4. Menu Devoluções\n");
-        printf("0. Sair\n");
-        printf("Escolha uma opção -> ");
-        scanf("%d", &choice);
-
-        switch (choice) 
-        {
-            case 1:
-                menu_client(client);
-                break;
-            case 2:
-                menu_route(route, client);
-                break;
-            case 3:
-                menu_delivery(deliveries);
-                break;
-            case 4:
-                menu_devolution(devolution);
-                break;
-            case 0:
-                printf("Saindo...\n");
-                break;
-            default:
-                printf("Opção inválida! Tente novamente.\n");
-        }
-    } while (choice != 0);
-
-    // Desalocar memória antes de sair
-    free(route);
-    free(deliveries);
-    free(devolution);
-}
-
-
-// int main()
-// {
-//     initialize_random();
-//     Client *client = alloc_client();
-//     Route *rota = alloc_route();
-//     customer_register(client);
-//     customer_register(client);
-//     // customer_register(client);
-//     add_delivery_route(rota, client->next);
-//     add_delivery_route(rota, client->next);
-//     add_delivery_route(rota, client->next);
-//     add_delivery_route(rota, client->next);
-
-//     list_route(rota);
-//     remove_delivery_route(rota);
-//     list_route(rota);
-    
-//     free_route(rota);
-//     free_client(client->next);
-
-//     return 0;
-// }
-
-int main() {
-    // Inicializa o gerador de números aleatórios
     initialize_random();
 
     // Exemplo de criação de clientes
     Client *clients = (Client *)malloc(sizeof(Client));
     clients->id_client = 1;
     clients->cpf = strdup("12345");
-    clients->name = strdup("John Doe");
+    clients->name = strdup("Alef cauan");
     clients->address = strdup("123 Main St");
     clients->next = (Client *)malloc(sizeof(Client));
     clients->next->id_client = 2;
@@ -911,31 +895,38 @@ int main() {
     clients->next->address = strdup("456 Elm St");
     clients->next->next = NULL;
     cont_client += 2;
+    
 
     // Exemplo de criação de rota
     Route *route = alloc_route();
-
     // Exemplo de criação de pilha de entregas não efetuadas
     Deliveries *deliveries = alloc_deliveries();
-
+    // Exemplo de criação de fila de devoluções
+    Devolution *devolution = alloc_devolution();
     // Adiciona entrega na rota
     add_delivery_route(route, clients);
     add_delivery_route(route, clients);
-
-    // Lista as entregas na rota
-    list_route(route);
+    add_delivery_route(route, clients);
 
     // Move uma entrega não efetuada para a pilha de entregas não efetuadas
-    Route_node *node_to_move = route->start;
-    route->start = route->start->next;
-    undelivered_push(deliveries, node_to_move);
+    while (route->start)
+    {
+        Route_node *node_to_move = route->start;
+        route->start = route->start->next;
+        undelivered_push(deliveries, node_to_move);
+    }
+    
+    // Adiciona a entrega não efetuada à fila de devoluções após a segunda tentativa falha
+    add_devolution(devolution, deliveries);
 
-    // Lista as entregas na rota após movimentação
-    list_route(route);
+    // Lista as devoluções
+    list_devolutions(devolution);
 
+    // Liberação de memória (implementação simplificada)
     free_client(clients);
     free_route(route);
     free_deliveries(deliveries);
+    free_devolution(devolution);
 
     return 0;
 }
