@@ -12,7 +12,7 @@
 // int vector_position(int largura, int i, int j) {return largura * i + j;}
 void initialize_random() {
     srand(time(NULL));
-}
+}  
 // checar se um ponteiro está alocado corretamente 
 void check_allocation(void *pointer, const char *mensage) 
 {
@@ -170,7 +170,7 @@ Deliveries_node *alloc_node_deliveries()
 {
     Deliveries_node *dn = (Deliveries_node *)malloc(sizeof(Deliveries_node));
     check_allocation(dn, "Deliveries_node alloc\n");
-    dn->client = alloc_client();
+    dn->route_node = alloc_node_route();
     dn->next = NULL;
     return dn;
 }
@@ -222,39 +222,10 @@ void free_client_node(Client *c)
     }
 }
 
-void free_node_deliveries(Deliveries_node *dn) 
-{
-    if (dn) 
-    {
-        // if(dn->client)
-        //     free_client_node(dn->client);
-        free(dn);
-    }
-}
-
 void free_node_route(Route_node *rn) 
 {
     if (rn) 
-    {
-        // if(rn->client)
-        //     free_client_node(rn->client);
         free(rn);
-    }
-}
-
-void free_deliveries(Deliveries *d) 
-{
-    if (d) 
-    {
-        Deliveries_node *current = d->top;
-        while (current) 
-        {
-            Deliveries_node *next = current->next;
-            free_node_deliveries(current);
-            current = next;
-        }
-        free(d);
-    }
 }
 
 void free_route(Route *r) 
@@ -269,6 +240,31 @@ void free_route(Route *r)
             current = next;
         }
         free(r);
+    }
+}
+
+void free_node_deliveries(Deliveries_node *dn) 
+{
+    if (dn)
+    {
+        free_node_route(dn->route_node);
+        free(dn);
+    }
+}
+
+
+void free_deliveries(Deliveries *d) 
+{
+    if (d) 
+    {
+        Deliveries_node *current = d->top;
+        while (current) 
+        {
+            Deliveries_node *next = current->next;
+            free_node_deliveries(current);
+            current = next;
+        }
+        free(d);
     }
 }
 
@@ -553,8 +549,8 @@ void add_delivery_route(Route *route, Client *client)
         route->end = new_node;
     }
 
-    // printf("Entrega adicionada: Cliente %s, Produto %s, Preço R$%.2f, ID Entrega %d\n",
-    //        new_node->client->name, new_node->item.name, new_node->item.price, new_node->id_delivery);
+    printf("Entrega adicionada: Cliente %s, Produto %s, Preço R$%.2f, ID Entrega %d\n",
+           new_node->client->name, new_node->item.name, new_node->item.price, new_node->id_delivery);
 }
 
 // Remover Entrega da Rota
@@ -596,34 +592,38 @@ void list_route(Route *route)
         current = current->next;
     }
 }
-// Deliveries *make_delivery(Route *route){
-//    printf("a");
-//    return route;
-// }
+
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// FUNÇÕES DE ENTREGA /////////////////////////////////
 
-// Adicionar Entrega Não Efetuada na Pilha
-void add_undelivered(Deliveries *deliveries, Deliveries_node *deliveries_node)
+// verifica se o stack está vazio
+BOOL is_empty(Deliveries *deliveries)
 {
-    if (deliveries->top!=NULL)
-    {
-        deliveries_node->next = deliveries->top;
-        deliveries->top = deliveries_node->next; 
-    }
-    else
-        deliveries->top = deliveries_node;
+    return deliveries->top == NULL;
+}
+
+void undelivered_push(Deliveries *deliveries, Route_node *route_node) 
+{
+    Deliveries_node *new_node = (Deliveries_node *)malloc(sizeof(Deliveries_node));
+    check_allocation(new_node, "Deliveries node");
+
+    new_node->route_node = route_node;
+    new_node->next = deliveries->top;
+    deliveries->top = new_node;
+
+    printf("Entrega movida para pilha de não efetuadas: Cliente %s, Produto %s, Preço R$%.2f, ID Entrega %d\n",
+           route_node->client->name, route_node->item.name, route_node->item.price, route_node->id_delivery);
 }
 
 // Remover Entrega Não Efetuada da Pilha
-void remove_undelivered(Deliveries *deliveries)
+Deliveries_node *undelivered_pop(Deliveries *deliveries)
 {  
-    if(deliveries->top!=NULL)
+    if(!is_empty(deliveries))
     {
         Deliveries_node *removed = deliveries->top;
         deliveries->top = removed->next;
         printf("produto removido");
-        // return removed; 
+        return removed;
     }
 }
 // Listar Entregas Não Efetuadas
@@ -637,7 +637,7 @@ void list_unfulfilled_deliveries(Deliveries *deliveries)
     while (aux!=NULL)
     {
         printf("-=-=-=-=-=-=-=-\n");
-        print_client(*aux->client);
+        print_client(*deliveries->top->route_node->client);
         aux = aux->next;
     }
 }
@@ -771,11 +771,11 @@ void menu_delivery(Deliveries *deliveries)
             case 1:
                 Deliveries_node *node1 = alloc_node_deliveries();
                 printf("digite o endereco:");
-                scanf("%s", node1->client->address);
-                add_undelivered(deliveries, node1);
+                // scanf("%s", node1->client->address);
+                // undelivered(deliveries, node1);
                 break;
             case 2:
-                remove_undelivered(deliveries);
+                // remove_undelivered(deliveries);
                 break;
             case 3:
                 list_unfulfilled_deliveries(deliveries);
@@ -805,7 +805,7 @@ void menu_devolution(Devolution *devolution)
             case 1:
                 Deliveries_node *node1 = alloc_node_deliveries();
                 printf("digite o endereco:");
-                scanf("%s", node1->client->address);
+                // scanf("%s", node1->client->address);
                 add_devolution(devolution, node1);
                 break;
             case 2:
@@ -871,25 +871,72 @@ void menu()
 }
 
 
-int main()
-{
-    initialize_random();
-    Client *client = alloc_client();
-    Route *rota = alloc_route();
-    customer_register(client);
-    customer_register(client);
-    // customer_register(client);
-    add_delivery_route(rota, client->next);
-    add_delivery_route(rota, client->next);
-    add_delivery_route(rota, client->next);
-    add_delivery_route(rota, client->next);
+// int main()
+// {
+//     initialize_random();
+//     Client *client = alloc_client();
+//     Route *rota = alloc_route();
+//     customer_register(client);
+//     customer_register(client);
+//     // customer_register(client);
+//     add_delivery_route(rota, client->next);
+//     add_delivery_route(rota, client->next);
+//     add_delivery_route(rota, client->next);
+//     add_delivery_route(rota, client->next);
 
-    list_route(rota);
-    remove_delivery_route(rota);
-    list_route(rota);
+//     list_route(rota);
+//     remove_delivery_route(rota);
+//     list_route(rota);
     
-    free_route(rota);
-    free_client(client->next);
+//     free_route(rota);
+//     free_client(client->next);
+
+//     return 0;
+// }
+
+int main() {
+    // Inicializa o gerador de números aleatórios
+    initialize_random();
+
+    // Exemplo de criação de clientes
+    Client *clients = (Client *)malloc(sizeof(Client));
+    clients->id_client = 1;
+    clients->cpf = strdup("12345");
+    clients->name = strdup("John Doe");
+    clients->address = strdup("123 Main St");
+    clients->next = (Client *)malloc(sizeof(Client));
+    clients->next->id_client = 2;
+    clients->next->cpf = strdup("98765");
+    clients->next->name = strdup("Jane Smith");
+    clients->next->address = strdup("456 Elm St");
+    clients->next->next = NULL;
+    cont_client += 2;
+
+    // Exemplo de criação de rota
+    Route *route = alloc_route();
+
+    // Exemplo de criação de pilha de entregas não efetuadas
+    Deliveries *deliveries = alloc_deliveries();
+
+    // Adiciona entrega na rota
+    add_delivery_route(route, clients);
+    add_delivery_route(route, clients);
+
+    // Lista as entregas na rota
+    list_route(route);
+
+    // Move uma entrega não efetuada para a pilha de entregas não efetuadas
+    Route_node *node_to_move = route->start;
+    route->start = route->start->next;
+    undelivered_push(deliveries, node_to_move);
+
+    // Lista as entregas na rota após movimentação
+    list_route(route);
+
+    free_client(clients);
+    free_route(route);
+    free_deliveries(deliveries);
 
     return 0;
 }
+

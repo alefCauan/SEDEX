@@ -90,25 +90,12 @@ typedef struct itens {
     float price;
 } Itens;
 
-// Nó de entrega na rota
-typedef struct deliveries_node {
-    Client *client;
-    Itens item;
-    int id_delivery;
-    int attempts;
-    struct deliveries_node *next;
-} Deliveries_node;
-
-// Pilha de entregas não efetuadas
-typedef struct deliveries {
-    Deliveries_node *top;
-} Deliveries;
-
 // Nó de rota de entregas
 typedef struct route_node {
     Client *client;
     Itens item;
     int id_delivery;
+    int attempts;
     struct route_node *next;
 } Route_node;
 
@@ -117,6 +104,17 @@ typedef struct route {
     Route_node *start;
     Route_node *end;
 } Route;
+
+// Nó de entrega na rota
+typedef struct deliveries_node {
+    Route_node *route_node;
+    struct deliveries_node *next;
+} Deliveries_node;
+
+// Pilha de entregas não efetuadas
+typedef struct deliveries {
+    Deliveries_node *top;
+} Deliveries;
 
 // Fila de devoluções
 typedef struct devolution {
@@ -222,10 +220,12 @@ void list_route(Route *route);
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// FUNÇÕES DE ENTREGA /////////////////////////////////
 
+// verifica se o stack está vazio
+BOOL is_empty(Deliveries *deliveries);
 // Adicionar Entrega Não Efetuada na Pilha
-void add_undelivered(Deliveries *deliveries, Deliveries_node *deliveries_node);
+void undelivered_push(Deliveries *deliveries, Route_node *route_node);
 // Remover Entrega Não Efetuada da Pilha
-void remove_undelivered(Deliveries *deliveries);
+Deliveries_node *undelivered_pop(Deliveries *deliveries);
 // Listar Entregas Não Efetuadas
 void list_unfulfilled_deliveries(Deliveries *deliveries);
 
