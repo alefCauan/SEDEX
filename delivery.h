@@ -90,25 +90,12 @@ typedef struct itens {
     float price;
 } Itens;
 
-// Nó de entrega na rota
-typedef struct deliveries_node {
-    Client *client;
-    Itens item;
-    int id_delivery;
-    int attempts;
-    struct deliveries_node *next;
-} Deliveries_node;
-
-// Pilha de entregas não efetuadas
-typedef struct deliveries {
-    Deliveries_node *top;
-} Deliveries;
-
 // Nó de rota de entregas
 typedef struct route_node {
     Client *client;
     Itens item;
     int id_delivery;
+    int attempts;
     struct route_node *next;
 } Route_node;
 
@@ -118,10 +105,26 @@ typedef struct route {
     Route_node *end;
 } Route;
 
+// Nó de entrega na rota
+typedef struct deliveries_node {
+    Route_node *route_node;
+    struct deliveries_node *next;
+} Deliveries_node;
+
+// Pilha de entregas não efetuadas
+typedef struct deliveries {
+    Deliveries_node *top;
+} Deliveries;
+
+// Node de Devoluções 
+typedef struct devolution_node {
+    Route_node *route;
+    struct devolution_node *next;
+} Devolution_node;
 // Fila de devoluções
 typedef struct devolution {
-    Route_node *start;
-    Route_node *end;
+    Devolution_node *start;
+    Devolution_node *end;
 } Devolution;
 
 
@@ -191,6 +194,7 @@ Route *alloc_route(void);  // alocar rota
 void free_client_node(Client *c);
 void free_node_deliveries(Deliveries_node *dn);
 void free_node_route(Route_node *rn);
+void free_node_devolution(Devolution_node *node);
 
 void free_client(Client *c);
 void free_deliveries(Deliveries *d);
@@ -222,10 +226,12 @@ void list_route(Route *route);
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// FUNÇÕES DE ENTREGA /////////////////////////////////
 
+// verifica se o stack está vazio
+BOOL is_empty(Deliveries *deliveries);
 // Adicionar Entrega Não Efetuada na Pilha
-void add_undelivered(Deliveries *deliveries, Deliveries_node *deliveries_node);
+void undelivered_push(Deliveries *deliveries, Route_node *route_node);
 // Remover Entrega Não Efetuada da Pilha
-void remove_undelivered(Deliveries *deliveries);
+Deliveries_node *undelivered_pop(Deliveries *deliveries);
 // Listar Entregas Não Efetuadas
 void list_unfulfilled_deliveries(Deliveries *deliveries);
 
@@ -233,7 +239,7 @@ void list_unfulfilled_deliveries(Deliveries *deliveries);
 /////////////////////////// FUNÇÕES DE DEVOLUÇÃO ///////////////////////////////
 
 // Adicionar Devolução na Fila
-void add_devolution(Devolution *devolution, Deliveries_node *deliveries_node);
+void add_devolution(Devolution *devolution, Deliveries *deliveries);
 // Remover Devolução da Fila
 void remove_devolution(Devolution *devolution);
 // listar devoluções
