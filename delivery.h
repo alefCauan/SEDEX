@@ -2,6 +2,20 @@
 #ifndef DELIVERY_H
 #define DELIVERY_H
 
+// enum do score de entrega
+typedef enum score {
+    DELIVERY_FIRST = 5, // fez a entrega de primeira
+    DELIVERY_SECOND = 3, // fez a entrega de segunda 
+    DELIVERY_DEVOLUTION = -1 // não fez a entrega
+} Score;
+// enum com as probabilidades de evento
+typedef enum odds {
+    LOW = 5,
+    LOW_MID = 15, 
+    MID = 30,
+    MID_HIGH = 55,
+    HIGH = 80
+} Odds;
 // enum contendo os valores do produtos
 typedef enum product {
     LAPTOP,
@@ -142,14 +156,16 @@ typedef struct aux
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// DEFINES ///////////////////////////////////////
 
-#define DELIVERY_FIRST 5 // fez a entrega de primeira
-#define DELIVERY_SECOND 3 // fez a entrega de segunda 
-#define DELIVERY_DEVOLUTION -1 // não fez a entrega 
+// #define DELIVERY_FIRST 5 // fez a entrega de primeira
+// #define DELIVERY_SECOND 3 // fez a entrega de segunda 
+// #define DELIVERY_DEVOLUTION -1 // não fez a entrega 
 #define CPF_LIMIT 5
 #define TRUE 1
 #define FALSE 0
 int id_client = 0;
+int id_delivery = 0;
 int cont_client = 0;
+int total_score = 0;
 typedef int BOOL;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -175,6 +191,8 @@ void get_char(char *mensage, char *str);
 void get_char_digit(char *mensage, char *str);
 // fazer uma escolha aleatoria entre os parametros
 int random_choice(int min, int max);
+// gera um delay aleatorio
+int random_delay();
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -222,6 +240,11 @@ void add_delivery_route(Route *route, Client *client);
 void remove_delivery_route(Route *route);
 // Listar Entregas na Rota
 void list_route(Route *route);
+// Função para Verificar se um Cliente Específico já Está na Fila
+Route_node *find_client_in_route(Route *route, Client *client);
+// Função para Verificar se um Endereço Específico já Está na Fila e Retornar o Nó
+Route_node* find_address_in_route(Route *route, const char *address);
+
 
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// FUNÇÕES DE ENTREGA /////////////////////////////////
@@ -231,7 +254,7 @@ BOOL is_empty(Deliveries *deliveries);
 // Adicionar Entrega Não Efetuada na Pilha
 void undelivered_push(Deliveries *deliveries, Route_node *route_node);
 // Remover Entrega Não Efetuada da Pilha
-Deliveries_node *undelivered_pop(Deliveries *deliveries);
+Deliveries_node *undelivered_pop(Deliveries_node *deliveries);
 // Listar Entregas Não Efetuadas
 void list_unfulfilled_deliveries(Deliveries *deliveries);
 
@@ -244,6 +267,21 @@ void add_devolution(Devolution *devolution, Deliveries *deliveries);
 void remove_devolution(Devolution *devolution);
 // listar devoluções
 void list_devolutions(Devolution *devolution);
+
+////////////////////////////////////////////////////////////////////////////////
+//////////////////////////// FUNÇÕES DE EVENTO /////////////////////////////////
+
+// verifica se um evento vai acontecer ou não
+BOOL random_event(Odds odd);
+// calcular o score ao entregar ou na devolução
+void score_calc_event(Score score);
+// evento de rota, uma pessoa realiza um pedido
+void route_event(Route *route, Client *client);
+// verifica o proximo cliente da lista 
+void verify_next_client(Client *previous, Client *next, int *chances, Odds odd);
+// Evento que verifica se a pessoa estava em casa
+void home_delivery_event(Route *route, Deliveries *deliveries, Devolution *devolution);
+
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////// FUNÇÕES DE MENU ///////////////////////////////////

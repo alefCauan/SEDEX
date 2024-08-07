@@ -5,6 +5,7 @@
 #include <ctype.h> 
 #include <errno.h>
 #include <time.h>
+#include <unistd.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// AUXILIARES ////////////////////////////////////
@@ -141,10 +142,13 @@ int random_choice(int min, int max)
     if(num < min)
         num += min;
 
-    printf("Num aleatorio: %d\n", num);
     return num;
 }
 
+int random_delay()
+{    
+    return (rand() % 7) + 2;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////// FUNÇÕES DE ALOCAÇÃO/DESALOCAÇÃO ///////////////////////////
@@ -237,7 +241,11 @@ void free_client_node(Client *c)
 void free_node_route(Route_node *rn) 
 {
     if (rn) 
-        free(rn);
+    {
+        rn->next = NULL;
+        rn->client = NULL;
+        rn = NULL;
+    }
 }
 
 void free_route(Route *r) 
@@ -320,10 +328,10 @@ void free_client(Client *head)
 // mostra um cliente especifico
 void print_client(Client client)
 {
-    printf("Nome: %s\n", client.name);
-    printf("CPF: %s\n", client.cpf);
-    printf("Endereço: %s\n", client.address);
-    printf("ID: %d\n", client.id_client);
+    printf("ID_CLIENT - %d\n", client.id_client);
+    printf("CPF  - %s\n", client.cpf);
+    printf("Nome - %s\n", client.name);
+    printf("Endereço - %s\n", client.address);
 }
 
 // Listagem de Clientes
@@ -511,51 +519,69 @@ void choose_product(Itens *item)
 {
     Aux aux = {0};
 
-    // for (int i = 0; i < NUM_PRODUCTS; i += 2) 
-    // {
-    //     printf("[%2d] - %13s ", i, products_text[i]);
-    //     printf("| [%2d] - %13s\n", i + 1, products_text[i + 1]);
-
-    // }
-
-    // do{
-    //     if(aux.attempts > 0)
-    //         printf("Escolha inválida. Por favor, tente novamente\n");
-        
-    //     aux.opt = get_int("Digite o número do produto desejado");
-    //     aux.attempts += 1;
-    // } 
-    // while(!valid_answer(1, NUM_PRODUCTS - 1, aux.opt));
-    aux.opt = random_choice(0, NUM_PRODUCTS);
-    printf("product: %d\n", aux.opt);
+    aux.opt = random_choice(0, NUM_PRODUCTS - 1);
     item->product = aux.opt;
     item->price = products_prices[aux.opt];
     strcpy(item->name, products_text[aux.opt]);
-
 }
 
 // Adicionar Entrega na Rota
 void add_delivery_route(Route *route, Client *client) 
 {
-    if(cont_client < 1)
+    if (cont_client < 1)
         return;
 
     Client *aux = client;
     int client_index = random_choice(1, cont_client);
-    printf("client: %d\n", client_index);
-    for(int i = 0; i < client_index - 1; i++)
+
+    for (int i = 0; i < client_index - 1; i++)
         aux = aux->next;
 
-
-    Route_node *new_node = (Route_node *)malloc(sizeof(Route_node));
+    Route_node *new_node = alloc_node_route();
     check_allocation(new_node, "Route node");
 
+    // cria novo cliente/pedido para entrega 
     new_node->client = aux;
     choose_product(&new_node->item);
-    new_node->id_delivery = (route->end) ? route->end->id_delivery + 1 : 1;
+    id_delivery += 1;
+    new_node->id_delivery = id_delivery;
+    // new_node->id_delivery = (route->end) ? route->end->id_delivery + 1 : 1;
     new_node->next = NULL;
 
-    if(!route->start) 
+    // Verificar se o cliente já está na fila
+    Route_node *existing_node = find_client_in_route(route, aux);
+    if (existing_node) 
+    {
+        new_node->next = existing_node->next;
+        existing_node->next = new_node;
+
+        if (existing_node == route->end)
+        {
+            route->end->next = new_node;
+            route->end = route->end->next;
+        } 
+    
+        printf("Entrega adicionada após cliente existente: Cliente %s, Produto %s, Preço R$%.2f, ID Entrega %d\n",
+               new_node->client->name, new_node->item.name, new_node->item.price, new_node->id_delivery);
+        return;
+    }
+
+    // Verificar se o endereço já está na fila
+    existing_node = find_address_in_route(route, aux->address);
+    if (existing_node) 
+    {
+        new_node->next = existing_node->next;
+        existing_node->next = new_node;
+        if (existing_node == route->end) 
+            route->end = new_node;
+
+        printf("Entrega adicionada após endereço existente: Cliente %s, Produto %s, Preço R$%.2f, ID Entrega %d\n",
+               new_node->client->name, new_node->item.name, new_node->item.price, new_node->id_delivery);
+        return;
+    }
+
+    // Adicionar no final da fila se não encontrar cliente ou endereço
+    if (!route->start) 
     {
         route->start = new_node;
         route->end = new_node;
@@ -566,7 +592,7 @@ void add_delivery_route(Route *route, Client *client)
         route->end = new_node;
     }
 
-    printf("Entrega adicionada: Cliente %s, Produto %s, Preço R$%.2f, ID Entrega %d\n",
+    printf("Entrega adicionada no final da fila: Cliente %s, Produto %s, Preço R$%.2f, ID Entrega %d\n",
            new_node->client->name, new_node->item.name, new_node->item.price, new_node->id_delivery);
 }
 
@@ -610,6 +636,35 @@ void list_route(Route *route)
     }
 }
 
+// Função para Verificar se um Cliente Específico já Está na Fila
+Route_node *find_client_in_route(Route *route, Client *client) 
+{
+    Route_node *current = route->start;
+    while (current) 
+    {
+        if (current->client->id_client == client->id_client) 
+            return current;
+
+        current = current->next;
+    }
+    
+    return NULL;
+}
+
+// Função para Verificar se um Endereço Específico já Está na Fila e Retornar o Nó
+Route_node* find_address_in_route(Route *route, const char *address) 
+{
+    Route_node *current = route->start;
+    while (current) 
+    {
+        if (strcmp(current->client->address, address) == 0) 
+            return current;
+
+        current = current->next;
+    }
+    return NULL;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// FUNÇÕES DE ENTREGA /////////////////////////////////
 
@@ -628,20 +683,21 @@ void undelivered_push(Deliveries *deliveries, Route_node *route_node)
     new_node->next = deliveries->top;
     deliveries->top = new_node;
 
-    printf("Entrega movida para pilha de não efetuadas: Cliente %s, Produto %s, Preço R$%.2f, ID Entrega %d\n",
-           route_node->client->name, route_node->item.name, route_node->item.price, route_node->id_delivery);
+    printf("PEDIDO (%s) DE %s EM %s ADICIONADO A ROTA DE NÃO EFETUADAS\n", new_node->route_node->item.name, new_node->route_node->client->name, new_node->route_node->client->address);
 }
 
 // Remover Entrega Não Efetuada da Pilha
-Deliveries_node *undelivered_pop(Deliveries *deliveries)
+Deliveries_node *undelivered_pop(Deliveries_node *deliveries)
 {  
-    if(!is_empty(deliveries))
+    if(deliveries)
     {
-        Deliveries_node *removed = deliveries->top;
-        deliveries->top = removed->next;
-        printf("produto removido");
-        return removed;
+        Deliveries_node *removed = deliveries;
+        deliveries = removed->next;
+        // free_node_deliveries(removed);
+        return deliveries;
     }
+
+    return deliveries;
 }
 // Listar Entregas Não Efetuadas
 void list_unfulfilled_deliveries(Deliveries *deliveries)
@@ -667,24 +723,14 @@ void list_unfulfilled_deliveries(Deliveries *deliveries)
 // Adicionar Devolução na Fila
 void add_devolution(Devolution *devolution, Deliveries *deliveries) 
 {
+    // fprintf(stderr, "Stack de deliveries está vazio\n");
     if (is_empty(deliveries)) 
-    {
-        fprintf(stderr, "Stack de deliveries está vazio\n");
         return;
-    }
 
-    while (!is_empty(deliveries)) 
+    while (!is_empty(deliveries) && deliveries->top->route_node) 
     {
         Route_node *route_node = deliveries->top->route_node;
 
-        // Se as tentativas forem menores que 2, apenas remova da pilha
-        if (route_node->attempts < 2) 
-        {
-            Deliveries_node *temp = deliveries->top;
-            deliveries->top = deliveries->top->next;
-            free_node_deliveries(temp);
-            continue;
-        }
         // Aloca um novo nó de devolução
         Devolution_node *new_node = alloc_node_devolution();
         new_node->route = route_node;
@@ -702,8 +748,6 @@ void add_devolution(Devolution *devolution, Deliveries *deliveries)
 
         deliveries->top = deliveries->top->next;
     }
-
-    printf("Todas as entregas não efetuadas foram movidas para a fila de devoluções.\n");
 }
 // Remover Devolução da Fila
 void remove_devolution(Devolution *devolution) 
@@ -878,11 +922,123 @@ void menu_devolution(Devolution *devolution)
     } while (choice != 0);
 }
 
-int main() 
+// Verifica se um evento vai acontecer ou não
+BOOL random_event(Odds odd) 
+{
+    int choice = random_choice(1, 100);
+    return choice <= (int)odd;
+}
+
+// Calcular o score ao entregar ou na devolução
+void score_calc_event(Score score) 
+{
+    total_score += score;
+}
+
+// Evento de rota, uma pessoa realiza um pedido
+void route_event(Route *route, Client *client) 
+{
+    if(random_event(LOW_MID))
+        add_delivery_route(route, client);
+}
+
+Route_node *next(Route_node *route) 
+{
+    if (!route)
+        return route;
+
+    route = route->next;
+    return route;
+}
+
+void verify_next_client(Client *previous, Client *next, int *chances, Odds odd)
+{
+    if(odd > 0 && (previous->id_client == next->id_client || strcmp(previous->address, next->address) == 0))
+        *chances = 100;
+    else 
+        *chances = odd;
+}
+
+// Evento que verifica se a pessoa estava em casa
+void home_delivery_event(Route *route, Deliveries *deliveries, Devolution *devolution) 
+{
+    // Primeira tentativa
+    printf("\n-- REALIZANDO A PRIMEIRA TENTATIVA DE ENTREGA --\n");
+    Route_node *aux_route = route->start;
+
+    int chances = MID_HIGH;
+
+    while (aux_route) 
+    {
+        if (random_event(chances)) 
+        {
+            if(aux_route->next)
+                verify_next_client(aux_route->client, aux_route->next->client, &chances, MID_HIGH);
+
+            printf("PEDIDO (%s) ENTREGURE PARA %s no endereço %s [SCORE +5]\n", aux_route->item.name, aux_route->client->name, aux_route->client->address);
+            score_calc_event(DELIVERY_FIRST);
+ 
+            aux_route = aux_route->next;
+        } 
+        else 
+        {
+            if(aux_route->next)
+                verify_next_client(aux_route->client, aux_route->next->client, &chances, 0);
+
+            aux_route->attempts += 1;
+            undelivered_push(deliveries, aux_route);
+            
+            aux_route = aux_route->next;
+        }
+    }
+    printf("\n-- FINALIZANDO A PRIMEIRA TENTATIVA DE ENTREGA --\n");
+
+    sleep(1.5);
+
+    printf("\n--- INICIANDO A SEGUNDA  TENTATIVA DE ENTREGA ---\n");
+    // Segunda tentativa
+    chances = MID_HIGH;
+    Deliveries_node *aux_deli = deliveries->top;
+    while (aux_deli != NULL) 
+    {
+        if (random_event(chances)) 
+        {
+            if(aux_deli->next)
+                verify_next_client(aux_deli->route_node->client, aux_deli->next->route_node->client, &chances, MID_HIGH);
+
+            printf("PEDIDO (%s) ENTREGURE PARA %s NO ENDEREÇO %s [SCORE +3]\n", 
+            aux_deli->route_node->item.name, 
+            aux_deli->route_node->client->name, 
+            aux_deli->route_node->client->address);
+            score_calc_event(DELIVERY_SECOND);
+            aux_deli = undelivered_pop(aux_deli);
+        } 
+        else 
+        {
+            if(aux_deli->next)
+                verify_next_client(aux_deli->route_node->client, aux_deli->next->route_node->client, &chances, 0);
+
+            printf("PEDIDO (%s) DE %s NO ENDEREÇO %s MOVIDO PARA DEVOLUÇÃO [SCORE -1]\n", aux_deli->route_node->item.name, aux_deli->route_node->client->name, aux_deli->route_node->client->address);
+            aux_deli->route_node->attempts += 1;
+            add_devolution(devolution, deliveries);
+            score_calc_event(DELIVERY_DEVOLUTION);
+            aux_deli = aux_deli->next;
+        }
+    }
+    printf("\n--- FINALIZANDO A SEGUNDA TENTATIVA DE ENTREGA ---\n");
+}
+
+void init_operation()
 {
     initialize_random();
 
-    // Exemplo de criação de clientes
+    // criação de rota
+    Route *route = alloc_route();
+    // criação de pilha de entregas não efetuadas
+    Deliveries *deliveries = alloc_deliveries();
+    // criação de fila de devoluções
+    Devolution *devolution = alloc_devolution();
+    // criação de clientes
     Client *clients = (Client *)malloc(sizeof(Client));
     clients->id_client = 1;
     clients->cpf = strdup("12345");
@@ -893,41 +1049,57 @@ int main()
     clients->next->cpf = strdup("98765");
     clients->next->name = strdup("Jane Smith");
     clients->next->address = strdup("456 Elm St");
-    clients->next->next = NULL;
-    cont_client += 2;
-    
+    clients->next->next = (Client *)malloc(sizeof(Client));
+    clients->next->next->id_client = 3;
+    clients->next->next->cpf = strdup("98767");
+    clients->next->next->name = strdup("Lima");
+    clients->next->next->address = strdup("466 Elm St");
+    clients->next->next->next = NULL;
+    clients->next->next->next = (Client *)malloc(sizeof(Client));
+    clients->next->next->next->id_client = 4;
+    clients->next->next->next->cpf = strdup("23456");
+    clients->next->next->next->name = strdup("Alvez");
+    clients->next->next->next->address = strdup("467 Junco");
+    clients->next->next->next->next = NULL;
+    cont_client += 4;
 
-    // Exemplo de criação de rota
-    Route *route = alloc_route();
-    // Exemplo de criação de pilha de entregas não efetuadas
-    Deliveries *deliveries = alloc_deliveries();
-    // Exemplo de criação de fila de devoluções
-    Devolution *devolution = alloc_devolution();
-    // Adiciona entrega na rota
-    add_delivery_route(route, clients);
-    add_delivery_route(route, clients);
-    add_delivery_route(route, clients);
+    int interval_seconds = 15;  // Ajuste o intervalo conforme necessário
 
-    // Move uma entrega não efetuada para a pilha de entregas não efetuadas
-    while (route->start)
+    // Tempo de início
+    time_t start_time = time(NULL);
+
+    while (TRUE) 
     {
-        Route_node *node_to_move = route->start;
-        route->start = route->start->next;
-        undelivered_push(deliveries, node_to_move);
+        // Executa a função route_event
+        route_event(route, clients);
+
+        // Verifica se o intervalo de tempo passou
+        if (difftime(time(NULL), start_time) >= interval_seconds) 
+        {
+            // Executa a função home_delivery_event
+            home_delivery_event(route, deliveries, devolution);
+            // Atualiza o tempo de início para o próximo intervalo
+            start_time = time(NULL);
+            break;
+        }
+
+        // Adiciona uma pequena pausa para evitar alta utilização da CPU
+        usleep(100000);  // Pausa de 100 milissegundos
     }
     
-    // Adiciona a entrega não efetuada à fila de devoluções após a segunda tentativa falha
-    add_devolution(devolution, deliveries);
-
-    // Lista as devoluções
-    list_devolutions(devolution);
-
+    printf("final score = %d\n", total_score);
     // Liberação de memória (implementação simplificada)
-    free_client(clients);
     free_route(route);
     free_deliveries(deliveries);
     free_devolution(devolution);
+    free_client(clients);
+}
 
+
+int main() 
+{
+    init_operation();
+    fprintf(stderr, "RODOU TUDO CERTU!\n");
     return 0;
 }
 
