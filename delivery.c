@@ -826,9 +826,8 @@ void menu_route(Route *route, Client *client)
     int choice;
     do {
         printf("\n==== MENU ROTAS ====\n");
-        printf("1. Adicionar Entrega na Rota\n");
-        printf("2. Remover Entrega da Rota\n");
-        printf("3. Listar Entregas na Rota\n");
+        printf("1. Remover Entrega da Rota\n");
+        printf("2. Listar Entregas na Rota\n");
         printf("0. Voltar\n");
         printf("Escolha uma opção -> ");
         scanf("%d", &choice);
@@ -836,12 +835,9 @@ void menu_route(Route *route, Client *client)
         switch (choice) 
         {
             case 1:
-                add_delivery_route(route, client);
-                break;
-            case 2:
                 remove_delivery_route(route);
                 break;
-            case 3:
+            case 2:
                 list_route(route);
                 break;
             case 0:
@@ -858,9 +854,8 @@ void menu_delivery(Deliveries *deliveries)
     int choice;
     do {
         printf("\n==== MENU ENTREGAS NÃO EFETUADAS ====\n");
-        printf("1. Adicionar Entrega Não Efetuada na Pilha\n");
-        printf("2. Remover Entrega Não Efetuada da Pilha\n");
-        printf("3. Listar Entregas Não Efetuadas\n");
+        printf("1. Remover Entrega Não Efetuada da Pilha\n");
+        printf("2. Listar Entregas Não Efetuadas\n");
         printf("0. Voltar\n");
         printf("Escolha uma opção: ");
         scanf("%d", &choice);
@@ -903,9 +898,6 @@ void menu_devolution(Devolution *devolution)
         switch (choice) {
             case 1:
                 Deliveries_node *node1 = alloc_node_deliveries();
-                printf("digite o endereco:");
-                // scanf("%s", node1->client->address);
-                // add_devolution(devolution, node1);
                 break;
             case 2:
                 remove_devolution(devolution);
@@ -920,6 +912,45 @@ void menu_devolution(Devolution *devolution)
                 printf("Opção inválida! Tente novamente.\n");
         }
     } while (choice != 0);
+}
+
+void main_menu(Route *route, Deliveries *deliveries, Devolution *devolution)
+{
+    Aux aux = {0};
+
+    do {
+        do
+        {
+            printf("\n--------- MENU DE ENTREGAS ----------\n");
+            printf("1 - CADASTRAR CLIENTE\n");
+            printf("2 - REMOVER CLINTE\n");
+            printf("3 - LISTAR CLIENTE\n");
+            printf("4 - ABRIR PARA PEDIDOS\n");
+            printf("5 - REALIZAR ROTA DE ENTREGA\n");
+            printf("6 - LISTAR DEVOLUÇÕES\n");
+            printf("Escolha uma opção ->");
+            scanf("%d", &aux.opt);
+        }
+        while(!valid_answer(0, 6, aux.opt));
+        
+
+        switch (aux.opt) {
+            case 1:
+                break;
+            case 2:
+                break;
+            case 3:
+                break;
+            case 4:
+                break;
+            case 5:
+                break;
+            case 6:
+                break;
+            default:
+                printf("Opção inválida! Tente novamente.\n");
+        }
+    } while (aux.opt != 0);
 }
 
 // Verifica se um evento vai acontecer ou não
@@ -970,6 +1001,7 @@ void home_delivery_event(Route *route, Deliveries *deliveries, Devolution *devol
 
     while (aux_route) 
     {
+        sleep(0.5);
         if (random_event(chances)) 
         {
             if(aux_route->next)
@@ -1001,6 +1033,7 @@ void home_delivery_event(Route *route, Deliveries *deliveries, Devolution *devol
     Deliveries_node *aux_deli = deliveries->top;
     while (aux_deli != NULL) 
     {
+        sleep(0.5);
         if (random_event(chances)) 
         {
             if(aux_deli->next)
@@ -1063,7 +1096,7 @@ void init_operation()
     clients->next->next->next->next = NULL;
     cont_client += 4;
 
-    int interval_seconds = 15;  // Ajuste o intervalo conforme necessário
+    int interval_seconds = 10;  // Ajuste o intervalo conforme necessário
 
     // Tempo de início
     time_t start_time = time(NULL);
@@ -1099,7 +1132,7 @@ void init_operation()
 int main() 
 {
     init_operation();
-    fprintf(stderr, "RODOU TUDO CERTU!\n");
+
     return 0;
 }
 
