@@ -223,13 +223,13 @@ void free_route(Route *r);
 /////////////////////////// FUNÇÕES DE PEDIDO //////////////////////////////////
 
 // Cadastro de Clientes
-void customer_register(Client *client);
+void client_register(Client *client);
 // Busca de Cliente
-void customer_search(Client *client);
+void client_search(Client *client);
 // Remoção de Cliente
 void client_removal(Client *client);
 // Listagem de Clientes
-void customer_List(Client *client);
+void client_List(Client *client);
 
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// FUNÇÕES DE ROTA ////////////////////////////////////
@@ -285,7 +285,7 @@ void home_delivery_event(Route *route, Deliveries *deliveries, Devolution *devol
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////// FUNÇÕES DE MENU ///////////////////////////////////
- 
+void main_menu(Client *client, Route *route, Deliveries *deliveries, Devolution *devolution);
 void menu_client(Client *client);
 void menu_route(Route *route, Client *client);
 void menu_delivery(Deliveries *deliveries);

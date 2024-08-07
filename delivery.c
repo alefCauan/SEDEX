@@ -335,7 +335,7 @@ void print_client(Client client)
 }
 
 // Listagem de Clientes
-void customer_list(Client *head) 
+void client_list(Client *head) 
 {
     Client *aux = head->next;
     while (aux) 
@@ -346,7 +346,7 @@ void customer_list(Client *head)
 }
 
 // Cadastro de Clientes
-void customer_register(Client *head) 
+void client_register(Client *head) 
 {
     Client *new_client = alloc_client();
     Client *aux = head;
@@ -367,7 +367,7 @@ void customer_register(Client *head)
 }
 
 // Busca de Cliente
-void customer_search(Client *head) 
+void client_search(Client *head) 
 {
     Client *aux_client;
     Aux aux = {0};
@@ -783,44 +783,6 @@ void list_devolutions(Devolution *devolution)
     }
 }
 
-// Funções para exibir os submenus e capturar a escolha do usuário
-void menu_client(Client *client) 
-{
-    int choice;
-    do {
-        printf("\n==== MENU CLIENTES ====\n");
-        printf("1. Registrar Cliente\n");
-        printf("2. Buscar Cliente\n");
-        printf("3. Remover Cliente\n");
-        printf("4. Listar Clientes\n");
-        printf("0. Voltar\n");
-        printf("Escolha uma opção: ");
-        scanf("%d", &choice);
-
-        switch (choice) 
-        {
-            case 1:
-                customer_register(client);
-                break;
-            case 2:
-                customer_search(client);
-                break;
-            case 3:
-                client_removal(client);
-                break;
-            case 4:
-                customer_list(client);
-                break;
-            case 0:
-                printf("Voltando...\n");
-                break;
-            default:
-                printf("Opção inválida! Tente novamente.\n");
-        }
-
-    } while (choice != 0);
-}
-
 void menu_route(Route *route, Client *client) 
 {
     int choice;
@@ -912,45 +874,6 @@ void menu_devolution(Devolution *devolution)
                 printf("Opção inválida! Tente novamente.\n");
         }
     } while (choice != 0);
-}
-
-void main_menu(Route *route, Deliveries *deliveries, Devolution *devolution)
-{
-    Aux aux = {0};
-
-    do {
-        do
-        {
-            printf("\n--------- MENU DE ENTREGAS ----------\n");
-            printf("1 - CADASTRAR CLIENTE\n");
-            printf("2 - REMOVER CLINTE\n");
-            printf("3 - LISTAR CLIENTE\n");
-            printf("4 - ABRIR PARA PEDIDOS\n");
-            printf("5 - REALIZAR ROTA DE ENTREGA\n");
-            printf("6 - LISTAR DEVOLUÇÕES\n");
-            printf("Escolha uma opção ->");
-            scanf("%d", &aux.opt);
-        }
-        while(!valid_answer(0, 6, aux.opt));
-        
-
-        switch (aux.opt) {
-            case 1:
-                break;
-            case 2:
-                break;
-            case 3:
-                break;
-            case 4:
-                break;
-            case 5:
-                break;
-            case 6:
-                break;
-            default:
-                printf("Opção inválida! Tente novamente.\n");
-        }
-    } while (aux.opt != 0);
 }
 
 // Verifica se um evento vai acontecer ou não
@@ -1060,6 +983,52 @@ void home_delivery_event(Route *route, Deliveries *deliveries, Devolution *devol
     }
     printf("\n--- FINALIZANDO A SEGUNDA TENTATIVA DE ENTREGA ---\n");
 }
+
+void main_menu(Client *client, Route *route, Deliveries *deliveries, Devolution *devolution)
+{
+    Aux aux = {0};
+
+    do {
+        do
+        {
+            printf("\n--------- MENU DE ENTREGAS ----------\n");
+            printf("1 - CADASTRAR CLIENTE\n");
+            printf("2 - REMOVER CLINTE\n");
+            printf("3 - LISTAR CLIENTE\n");
+            printf("4 - ABRIR PARA PEDIDOS\n");
+            printf("5 - REALIZAR ROTA DE ENTREGA\n");
+            printf("6 - LISTAR DEVOLUÇÕES\n");
+            printf("Escolha uma opção ->");
+            scanf("%d", &aux.opt);
+        }
+        while(!valid_answer(0, 6, aux.opt));
+        
+
+        switch (aux.opt) {
+            case 1:
+                client_register(client);
+                break;
+            case 2:
+                client_removal(client);
+                break;
+            case 3:
+                client_list(client);
+                break;
+            case 4:
+                route_event(route, client);
+                break;
+            case 5:
+                home_delivery_event(route, deliveries, devolution);
+                break;
+            case 6:
+                list_devolutions(devolution);
+                break;
+            default:
+                printf("Opção inválida! Tente novamente.\n");
+        }
+    } while (aux.opt != 0);
+}
+
 
 void init_operation()
 {
