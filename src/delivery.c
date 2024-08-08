@@ -347,9 +347,9 @@ void main_menu(Client *client, Route *route, Deliveries *deliveries, Devolution 
             scanf("%d", &aux.opt);
         }
         while(!valid_answer(0, 6, aux.opt));
-        
 
-        switch (aux.opt) {
+        switch (aux.opt)
+        {
             case 1:
                 client_register(client);
                 break;
@@ -371,7 +371,8 @@ void main_menu(Client *client, Route *route, Deliveries *deliveries, Devolution 
             default:
                 printf("Opção inválida! Tente novamente.\n");
         }
-    } while (aux.opt != 0);
+    } 
+    while (aux.opt != 0);
 }
 
 

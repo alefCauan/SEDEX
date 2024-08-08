@@ -9,7 +9,8 @@
 
 
 // Escolhe um produto aleatoriamente para um item
-void choose_product(Itens *item) {
+void choose_product(Itens *item) 
+{
     Aux aux = {0};
     aux.opt = random_choice(0, NUM_PRODUCTS - 1);
     item->product = aux.opt;
@@ -18,7 +19,8 @@ void choose_product(Itens *item) {
 }
 
 // Adicionar Entrega na Rota
-void add_delivery_route(Route *route, Client *client) {
+void add_delivery_route(Route *route, Client *client) 
+{
     if (cont_client < 1)
         return;
 
