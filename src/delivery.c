@@ -436,8 +436,11 @@ void init_operation()
     
     printf("final score = %d\n", total_score);
     // Liberação de memória (implementação simplificada)
+    // funcao problematica
     free_route(route);
+    // Funcao que as vezes da problema
     free_deliveries(deliveries);
+    // Funcao problematica
     free_devolution(devolution);
     free_client(clients);
 }
