@@ -162,10 +162,10 @@ typedef struct aux
 #define CPF_LIMIT 5
 #define TRUE 1
 #define FALSE 0
-int id_client = 0;
-int id_delivery = 0;
-int cont_client = 0;
-int total_score = 0;
+extern int id_client ;
+extern int id_delivery;
+extern int cont_client;
+extern int total_score;
 typedef int BOOL;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -193,7 +193,8 @@ void get_char_digit(char *mensage, char *str);
 int random_choice(int min, int max);
 // gera um delay aleatorio
 int random_delay();
-
+// printa cliente
+void print_client(Client client); 
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////// FUNÇÕES DE ALOCAÇÃO/DESALOCAÇÃO ///////////////////////////
@@ -207,7 +208,7 @@ Client *alloc_client(void); // alocar cliente
 Deliveries *alloc_deliveries(void); // alocar entregas 
 Devolution *alloc_devolution(void); // alocar devolições 
 Route *alloc_route(void);  // alocar rota
-
+Devolution_node *alloc_node_devolution();
 
 void free_client_node(Client *c);
 void free_node_deliveries(Deliveries_node *dn);
@@ -229,7 +230,7 @@ void client_search(Client *client);
 // Remoção de Cliente
 void client_removal(Client *client);
 // Listagem de Clientes
-void client_List(Client *client);
+void client_list(Client *head);
 
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// FUNÇÕES DE ROTA ////////////////////////////////////
@@ -281,7 +282,8 @@ void route_event(Route *route, Client *client);
 void verify_next_client(Client *previous, Client *next, int *chances, Odds odd);
 // Evento que verifica se a pessoa estava em casa
 void home_delivery_event(Route *route, Deliveries *deliveries, Devolution *devolution);
-
+// inicializa a randomização
+void initialize_random();
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////// FUNÇÕES DE MENU ///////////////////////////////////
@@ -292,5 +294,8 @@ void menu_delivery(Deliveries *deliveries);
 void menu_devolution(Devolution *devolution);
 void menu();
 
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////// FUNCAO DE INICIO ////////////////////////////////////
 
+void init_operation();
 #endif
