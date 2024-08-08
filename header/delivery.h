@@ -2,6 +2,7 @@
 #ifndef DELIVERY_H
 #define DELIVERY_H
 
+
 // nome incial das pessoas
 static const char *name_text[] = {
     "Alef Cauan",
@@ -192,6 +193,7 @@ typedef struct aux
 #define CPF_LIMIT 5
 #define TRUE 1
 #define FALSE 0
+
 extern int id_client;
 extern int id_delivery;
 extern int cont_client;
@@ -253,6 +255,7 @@ void free_route(Route *r);
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// FUNÇÕES DE CLIENTE /////////////////////////////////
 
+
 // Cadastro de Clientes
 void client_register(Client *client);
 // Busca de Cliente
@@ -261,8 +264,10 @@ void client_search(Client *client);
 void client_removal(Client *client);
 // Listagem de Clientes
 void client_list(Client *head);
+
 // inicia clientes com algumas pessoas 
 void initialize_clients(Client *client);
+
 
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// FUNÇÕES DE ROTA ////////////////////////////////////
@@ -312,8 +317,10 @@ void score_calc_event(Score score);
 void route_event(Route *route, Client *client);
 // verifica o proximo cliente da lista 
 void verify_next_client(Client *previous, Client *next, int *chances, Odds odd);
+
 // verifica o proximo cliente da lista 
 void verify_next_client_stack(Client *previous, Client *next, int *chances, Odds odd);
+
 // Evento que verifica se a pessoa estava em casa
 void home_delivery_event(Route *route, Deliveries *deliveries, Devolution *devolution);
 // inicializa a randomização

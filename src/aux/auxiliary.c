@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <stdio.h>
 
+
 void initialize_random() {
     srand(time(NULL));
 }
@@ -128,6 +129,7 @@ int random_delay() {
 
 void free_client_node(Client *c) {
     if (c) {
+
         free(c->cpf);
         free(c->name);
         free(c->address);
@@ -146,6 +148,24 @@ void free_route(Route *r) {
     if (r) {
         Route_node *current = r->start;
         while (current) {
+
+void free_node_route(Route_node *rn) 
+{
+    if (rn) 
+    {
+        rn->client = NULL;
+        rn = NULL;
+    }
+}
+
+void free_route(Route *r) 
+{
+    if (r) 
+    {
+        Route_node *current = r->start;
+        while (current) 
+        {
+
             Route_node *next = current->next;
             free_node_route(current);
             current = next;
@@ -154,17 +174,21 @@ void free_route(Route *r) {
     }
 }
 
+
 void free_node_deliveries(Deliveries_node *dn) {
     if (dn) {
         // Não libera o route_node aqui para evitar double_free
+
         free(dn);
     }
 }
+
 
 void free_deliveries(Deliveries *d) {
     if (d) {
         Deliveries_node *current = d->top;
         while (current) {
+
             Deliveries_node *next = current->next;
             free_node_deliveries(current);
             current = next;
@@ -173,9 +197,11 @@ void free_deliveries(Deliveries *d) {
     }
 }
 
+
 void free_node_devolution(Devolution_node *node) {
     if (node) {
         // Não libera o route aqui para evitar double_free
+
         free(node);
     }
 }
@@ -185,6 +211,8 @@ void free_devolution(Devolution *d) {
     {
         Devolution_node *current = d->start;
         while (current) {
+
+          
             Devolution_node *next = current->next;
             free_node_devolution(current);
             current = next;
@@ -193,13 +221,17 @@ void free_devolution(Devolution *d) {
     }
 }
 
+
 void free_client(Client *head) {
     Client *current = head;
     Client *next_client;
 
     while (current != NULL) {
+
         next_client = current->next;
         free_client_node(current);
         current = next_client;
     }
+
 }
+
