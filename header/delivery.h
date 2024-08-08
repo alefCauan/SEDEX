@@ -2,6 +2,36 @@
 #ifndef DELIVERY_H
 #define DELIVERY_H
 
+// nome incial das pessoas
+static const char *name_text[] = {
+    "Alef Cauan",
+    "Mateus da Rocha",
+    "Gabriel Lima",
+    "Gabriel Alvez",
+    "Ghabriel Sousa",
+    "Marcio Roberto"
+};
+
+// nome inicial dos endereços
+static const char *address_text[] = {
+    "PI. Monsenhor 444 r.s",
+    "PI. Bocaina 999",
+    "CE Parambu 123",
+    "CE Parambu 456",
+    "MA Paraibana 11",
+    "PE Paulistana 000"
+};
+
+// string inicial do cpf 
+static const char *cpf_text[] = {
+    "12345",
+    "98765",
+    "98767",
+    "23456",
+    "11156",
+    "23411"
+};
+
 // enum do score de entrega
 typedef enum score {
     DELIVERY_FIRST = 5, // fez a entrega de primeira
@@ -162,7 +192,7 @@ typedef struct aux
 #define CPF_LIMIT 5
 #define TRUE 1
 #define FALSE 0
-extern int id_client ;
+extern int id_client;
 extern int id_delivery;
 extern int cont_client;
 extern int total_score;
@@ -221,7 +251,7 @@ void free_devolution(Devolution *d);
 void free_route(Route *r);
 
 ////////////////////////////////////////////////////////////////////////////////
-/////////////////////////// FUNÇÕES DE PEDIDO //////////////////////////////////
+/////////////////////////// FUNÇÕES DE CLIENTE /////////////////////////////////
 
 // Cadastro de Clientes
 void client_register(Client *client);
@@ -231,6 +261,8 @@ void client_search(Client *client);
 void client_removal(Client *client);
 // Listagem de Clientes
 void client_list(Client *head);
+// inicia clientes com algumas pessoas 
+void initialize_clients(Client *client);
 
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// FUNÇÕES DE ROTA ////////////////////////////////////
@@ -280,6 +312,8 @@ void score_calc_event(Score score);
 void route_event(Route *route, Client *client);
 // verifica o proximo cliente da lista 
 void verify_next_client(Client *previous, Client *next, int *chances, Odds odd);
+// verifica o proximo cliente da lista 
+void verify_next_client_stack(Client *previous, Client *next, int *chances, Odds odd);
 // Evento que verifica se a pessoa estava em casa
 void home_delivery_event(Route *route, Deliveries *deliveries, Devolution *devolution);
 // inicializa a randomização

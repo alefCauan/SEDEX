@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 
-int id_client = 0;
-int cont_client = 0;
+int id_client = 7;
+int cont_client = 6;
 
 // mostra um cliente especifico
 void print_client(Client client) {
@@ -23,7 +23,8 @@ void client_list(Client *head) {
 }
 
 // Cadastro de Clientes
-void client_register(Client *head) {
+void client_register(Client *head) 
+{
     Client *new_client = alloc_client();
     Client *aux = head;
 
@@ -31,7 +32,8 @@ void client_register(Client *head) {
 
     do {
         get_char_digit("o cpf do cliente", new_client->cpf);
-    } while (!validate_cpf(head, new_client->cpf));
+    } 
+    while (!validate_cpf(head, new_client->cpf));
     
     get_char("o nome do cliente", new_client->name);
     get_char("o endereco do cliente", new_client->address);
@@ -99,35 +101,41 @@ void client_search(Client *head) {
 }
 
 // Remoção de Cliente
-void client_removal(Client *head) {
+void client_removal(Client *head) 
+{
     if (!head) return;
 
     Client *aux_client, *previous;
     Aux aux = {0};
 
-    while (TRUE) {
+    while (TRUE) 
+    {
         printf("\n___ TIPOS DE REMOÇÃO ____\n");
         do {
             printf("[1] - ID\n");
             printf("[2] - CPF\n");
             printf("[0] - VOLTAR\n");
             aux.opt = get_int("sua escolha");
-        } while (!valid_answer(0, 2, aux.opt));
+        } 
+        while (!valid_answer(0, 2, aux.opt));
 
         if (aux.opt == 0) break;
 
-        switch (aux.opt) {
+        switch (aux.opt) 
+        {
         case 1:
             aux_client = head->next;
             previous = head;
             do {
                 aux.id = get_int("o id do cliente");
                 aux.attempts += 1;
-            } while (!valid_answer(0, id_client, aux.id) && aux.attempts <= 3);
+            } 
+            while (!valid_answer(0, id_client, aux.id) && aux.attempts <= 3);
 
             if (aux.attempts >= 3) break;
 
-            while (aux_client) {
+            while (aux_client) 
+            {
                 if (aux.id == aux_client->id_client) {
                     previous->next = aux_client->next;
                     free_client_node(aux_client);
@@ -144,9 +152,11 @@ void client_removal(Client *head) {
             previous = head;
             do {
                 get_char_digit("o cpf do cliente", aux.cpf);
-            } while (!validate_cpf(head, aux.cpf));
+            } 
+            while (!validate_cpf(head, aux.cpf));
 
-            while (aux_client) {
+            while (aux_client) 
+            {
                 if (strcmp(aux.cpf, aux_client->cpf) == 0) {
                     previous->next = aux_client->next;
                     free_client_node(aux_client);
@@ -162,5 +172,31 @@ void client_removal(Client *head) {
             break;
         }
         printf("Cliente não encontrado.\n");
+    }
+}
+
+void initialize_clients(Client *clients) 
+{
+    Client *aux = clients;
+
+    for (int i = 0; i < cont_client; i++) 
+    {
+        Client *new_client = alloc_client();
+        new_client->id_client = i + 1;
+        new_client->cpf = strdup(cpf_text[i]);
+        new_client->name = strdup(name_text[i]);
+        new_client->address = strdup(address_text[i]);
+        new_client->next = NULL;
+
+        if (aux == NULL) 
+        {
+            clients = new_client;
+            aux = clients;
+        } 
+        else 
+        {
+            aux->next = new_client;
+            aux = new_client;
+        }
     }
 }
