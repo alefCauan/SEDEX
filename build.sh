@@ -3,8 +3,10 @@
 set -xe
 
 # Compile os arquivos .c localizados na pasta src
-gcc  src/main.c src/client/client.c src/route/route.c src/delivery/delivery.c src/aux/auxiliary.c src/allocation/allocation.c -Iheader -o saida -lm
+gcc  -g src/main.c src/client/client.c src/route/route.c src/delivery/delivery.c src/aux/auxiliary.c src/allocation/allocation.c -Iheader -o saida -lm
 
 # Execute o binário
-./saida
+gdb ./saida run run 
+
+# valgrind --leak-check=full ./meu_programa
 

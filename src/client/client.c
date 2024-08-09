@@ -7,23 +7,34 @@ int id_client = 7;
 int cont_client = 6;
 
 
-// mostra um cliente especifico
-void print_client(Client client) {
-    printf("ID_CLIENT - %d\n", client.id_client);
-    printf("CPF  - %s\n", client.cpf);
-    printf("Nome - %s\n", client.name);
-    printf("Endereço - %s\n", client.address);
+// Mostra um cliente específico com mais detalhes
+void print_client(Client client) 
+{
+    printf("------------- CLIENTE -------------\n");
+    printf("ID_CLIENT: %d\n", client.id_client);
+    printf("CPF:       %s\n", client.cpf);
+    printf("Nome:      %s\n", client.name);
+    printf("Endereço:  %s\n", client.address);
+    printf("-----------------------------------\n");
+
 }
 
 // Listagem de Clientes
-void client_list(Client *head) {
+void client_list(Client *head) 
+{
+    if (head->next == NULL) 
+    {
+        printf("Nenhum cliente cadastrado.\n");
+        return;
+    }
+
     Client *aux = head->next;
-    while (aux) {
+    while (aux) 
+    {
         print_client(*aux);
         aux = aux->next;
     }
 }
-
 // Cadastro de Clientes
 
 void client_register(Client *head) 
@@ -198,9 +209,12 @@ void initialize_clients(Client *clients)
     {
         Client *new_client = alloc_client();
         new_client->id_client = i + 1;
-        new_client->cpf = strdup(cpf_text[i]);
-        new_client->name = strdup(name_text[i]);
-        new_client->address = strdup(address_text[i]);
+        new_client->cpf = alloc_string();
+        new_client->name = alloc_string();
+        new_client->address = alloc_string();
+        strcpy(new_client->cpf, cpf_text[i]);
+        strcpy(new_client->name, name_text[i]);
+        strcpy(new_client->address, address_text[i]);
         new_client->next = NULL;
 
         if (aux == NULL) 

@@ -9,6 +9,12 @@
 #include <stdio.h>
 
 
+void line()
+{
+    printf("-------------------------------------------------------------------------------------------------------------\n");
+}
+
+
 void initialize_random() {
     srand(time(NULL));
 }
@@ -144,8 +150,10 @@ void free_node_route(Route_node *rn) {
     }
 }
 
-void free_route(Route *r) {
-    if (r) {
+void free_route(Route *r) 
+{
+    if (r) 
+    {
         Route_node *current = r->start;
         while (current) {
 
@@ -174,8 +182,9 @@ void free_route(Route *r)
     }
 }
 
+void free_node_deliveries(Deliveries_node *dn) 
+{
 
-void free_node_deliveries(Deliveries_node *dn) {
     if (dn) {
         // Não libera o route_node aqui para evitar double_free
 
@@ -184,7 +193,9 @@ void free_node_deliveries(Deliveries_node *dn) {
 }
 
 
-void free_deliveries(Deliveries *d) {
+void free_deliveries(Deliveries *d) 
+{
+
     if (d) {
         Deliveries_node *current = d->top;
         while (current) {
@@ -198,7 +209,9 @@ void free_deliveries(Deliveries *d) {
 }
 
 
-void free_node_devolution(Devolution_node *node) {
+void free_node_devolution(Devolution_node *node) 
+{
+
     if (node) {
         // Não libera o route aqui para evitar double_free
 
@@ -206,7 +219,8 @@ void free_node_devolution(Devolution_node *node) {
     }
 }
 
-void free_devolution(Devolution *d) {
+void free_devolution(Devolution *d) 
+{
     if (d) 
     {
         Devolution_node *current = d->start;
@@ -222,7 +236,9 @@ void free_devolution(Devolution *d) {
 }
 
 
-void free_client(Client *head) {
+void free_client(Client *head) 
+{
+
     Client *current = head;
     Client *next_client;
 
