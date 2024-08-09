@@ -193,9 +193,12 @@ void initialize_clients(Client *clients)
     {
         Client *new_client = alloc_client();
         new_client->id_client = i + 1;
-        new_client->cpf = strdup(cpf_text[i]);
-        new_client->name = strdup(name_text[i]);
-        new_client->address = strdup(address_text[i]);
+        new_client->cpf = alloc_string();
+        new_client->name = alloc_string();
+        new_client->address = alloc_string();
+        strcpy(new_client->cpf, cpf_text[i]);
+        strcpy(new_client->name, name_text[i]);
+        strcpy(new_client->address, address_text[i]);
         new_client->next = NULL;
 
         if (aux == NULL) 
