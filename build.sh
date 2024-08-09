@@ -7,3 +7,4 @@ gcc  src/main.c src/client/client.c src/route/route.c src/delivery/delivery.c sr
 
 # Execute o binário
 ./saida
+
