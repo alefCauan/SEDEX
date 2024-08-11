@@ -10,3 +10,4 @@ gcc  -g src/main.c src/client/client.c src/route/route.c src/delivery/delivery.c
 ./saida
 
 # valgrind --leak-check=full ./meu_programa
+

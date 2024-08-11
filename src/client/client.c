@@ -2,8 +2,10 @@
 #include <stdio.h>
 #include <string.h>
 
+
 int id_client = 7;
 int cont_client = 6;
+
 
 // Mostra um cliente específico com mais detalhes
 void print_client(Client client) 
@@ -14,6 +16,7 @@ void print_client(Client client)
     printf("Nome:      %s\n", client.name);
     printf("Endereço:  %s\n", client.address);
     printf("-----------------------------------\n");
+
 }
 
 // Listagem de Clientes
@@ -33,8 +36,10 @@ void client_list(Client *head)
     }
 }
 // Cadastro de Clientes
+
 void client_register(Client *head) 
 {
+
     Client *new_client = alloc_client();
     Client *aux = head;
 
@@ -42,8 +47,10 @@ void client_register(Client *head)
 
     do {
         get_char_digit("o cpf do cliente", new_client->cpf);
+
     } 
     while (!validate_cpf(head, new_client->cpf));
+
     
     get_char("o nome do cliente", new_client->name);
     get_char_digit("o endereco do cliente", new_client->address);
@@ -112,21 +119,26 @@ void client_search(Client *head)
 }
 
 // Remoção de Cliente
+
 void client_removal(Client *head) 
 {
+
     if (!head) return;
 
     Client *aux_client, *previous;
     Aux aux = {0};
 
+
     while (TRUE) 
     {
+
         printf("\n___ TIPOS DE REMOÇÃO ____\n");
         do {
             printf("[1] - ID\n");
             printf("[2] - CPF\n");
             printf("[0] - VOLTAR\n");
             aux.opt = get_int("sua escolha");
+
         } 
         while (!valid_answer(0, 2, aux.opt));
 
@@ -134,12 +146,14 @@ void client_removal(Client *head)
 
         switch (aux.opt) 
         {
+
         case 1:
             aux_client = head->next;
             previous = head;
             do {
                 aux.id = get_int("o id do cliente");
                 aux.attempts += 1;
+
             } 
             while (!valid_answer(0, id_client, aux.id) && aux.attempts <= 3);
 
@@ -147,6 +161,7 @@ void client_removal(Client *head)
 
             while (aux_client) 
             {
+
                 if (aux.id == aux_client->id_client) {
                     previous->next = aux_client->next;
                     free_client_node(aux_client);
@@ -163,6 +178,7 @@ void client_removal(Client *head)
             previous = head;
             do {
                 get_char_digit("o cpf do cliente", aux.cpf);
+
             } 
             while (!validate_cpf(head, aux.cpf));
 
@@ -214,3 +230,4 @@ void initialize_clients(Client *clients)
         }
     }
 }
+
