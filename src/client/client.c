@@ -53,7 +53,7 @@ void client_register(Client *head)
 
     
     get_char("o nome do cliente", new_client->name);
-    get_char("o endereco do cliente", new_client->address);
+    get_char_digit("o endereco do cliente", new_client->address);
 
     new_client->id_client = id_client;
     id_client += 1;
@@ -62,7 +62,8 @@ void client_register(Client *head)
 }
 
 // Busca de Cliente
-void client_search(Client *head) {
+void client_search(Client *head) 
+{
     Client *aux_client;
     Aux aux = {0};
 
