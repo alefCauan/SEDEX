@@ -41,11 +41,14 @@ void add_delivery_route(Route *route, Client *client)
 
     // Verificar se o cliente já está na fila
     Route_node *existing_node = find_client_in_route(route, aux);
-    if (existing_node) {
+
+    if (existing_node) 
+    {
         new_node->next = existing_node->next;
         existing_node->next = new_node;
 
-        if (existing_node == route->end) {
+        if (existing_node == route->end) 
+        {
             route->end->next = new_node;
             route->end = route->end->next;
         } 
@@ -57,7 +60,9 @@ void add_delivery_route(Route *route, Client *client)
 
     // Verificar se o endereço já está na fila
     existing_node = find_address_in_route(route, aux->address);
-    if (existing_node) {
+
+    if (existing_node) 
+    {
         new_node->next = existing_node->next;
         existing_node->next = new_node;
         if (existing_node == route->end) 
@@ -69,21 +74,29 @@ void add_delivery_route(Route *route, Client *client)
     }
 
     // Adicionar no final da fila se não encontrar cliente ou endereço
-    if (!route->start) {
+    if (!route->start) 
+    {
         route->start = new_node;
         route->end = new_node;
-    } else {
+    } 
+    else 
+    {
         route->end->next = new_node;
         route->end = new_node;
     }
 
     printf("Entrega adicionada no final da fila: Cliente %s, Produto %s, Preço R$%.2f, ID Entrega %d\n",
-           new_node->client->name, new_node->item.name, new_node->item.price, new_node->id_delivery);
+    new_node->client->name,
+    new_node->item.name,
+    new_node->item.price,
+    new_node->id_delivery);
 }
 
 // Remover Entrega da Rota
-void remove_delivery_route(Route *route) {
-    if (route->start == NULL) {
+void remove_delivery_route(Route *route) 
+{
+    if (route->start == NULL) 
+    {
         printf("Nenhuma entrega para remover.\n");
         return;
     }
@@ -101,8 +114,10 @@ void remove_delivery_route(Route *route) {
 }
 
 // Listar Entregas na Rota
-void list_route(Route *route) {
-    if (route->start == NULL) {
+void list_route(Route *route) 
+{
+    if (route->start == NULL) 
+    {
         printf("A rota de entregas está vazia.\n");
         return;
     }
@@ -117,23 +132,31 @@ void list_route(Route *route) {
 }
 
 // Função para Verificar se um Cliente Específico já Está na Fila
-Route_node *find_client_in_route(Route *route, Client *client) {
+Route_node *find_client_in_route(Route *route, Client *client) 
+{
     Route_node *current = route->start;
-    while (current) {
+    while (current) 
+    {
         if (current->client->id_client == client->id_client) 
             return current;
+
         current = current->next;
     }
+
     return NULL;
 }
 
 // Função para Verificar se um Endereço Específico já Está na Fila e Retornar o Nó
-Route_node* find_address_in_route(Route *route, const char *address) {
+Route_node* find_address_in_route(Route *route, const char *address) 
+{
     Route_node *current = route->start;
-    while (current) {
+    while (current) 
+    {
         if (strcmp(current->client->address, address) == 0) 
             return current;
+
         current = current->next;
     }
+
     return NULL;
 }

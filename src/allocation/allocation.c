@@ -6,13 +6,15 @@
 #include <time.h>
 #include <unistd.h>
 
-char *alloc_string() {
+char *alloc_string() 
+{
     char *str = (char *)malloc(100 * sizeof(char));
     check_allocation(str, "String allocation");
     return str;
 }
 
-Client *alloc_client() {
+Client *alloc_client() 
+{
     Client *c = (Client *)malloc(sizeof(Client));
     check_allocation(c, "Client allocation");
     c->cpf = alloc_string();
@@ -22,7 +24,8 @@ Client *alloc_client() {
     return c;
 }
 
-Deliveries_node *alloc_node_deliveries() {
+Deliveries_node *alloc_node_deliveries() 
+{
     Deliveries_node *dn = (Deliveries_node *)malloc(sizeof(Deliveries_node));
     check_allocation(dn, "Deliveries_node allocation");
     dn->route_node = alloc_node_route();
@@ -30,14 +33,16 @@ Deliveries_node *alloc_node_deliveries() {
     return dn;
 }
 
-Deliveries *alloc_deliveries() {
+Deliveries *alloc_deliveries() 
+{
     Deliveries *d = (Deliveries *)malloc(sizeof(Deliveries));
     check_allocation(d, "Deliveries allocation");
     d->top = NULL;
     return d;
 }
 
-Route_node *alloc_node_route() {
+Route_node *alloc_node_route() 
+{
     Route_node *rn = (Route_node *)malloc(sizeof(Route_node));
     check_allocation(rn, "Route_node allocation");
     rn->client = alloc_client();
@@ -45,7 +50,8 @@ Route_node *alloc_node_route() {
     return rn;
 }
 
-Route *alloc_route() {
+Route *alloc_route() 
+{
     Route *r = (Route *)malloc(sizeof(Route));
     check_allocation(r, "Route allocation");
     r->start = NULL;
@@ -53,7 +59,8 @@ Route *alloc_route() {
     return r;
 }
 
-Devolution_node *alloc_node_devolution() {
+Devolution_node *alloc_node_devolution() 
+{
     Devolution_node *dn = (Devolution_node *)malloc(sizeof(Devolution_node));
     check_allocation(dn, "Devolution_node allocation");
     dn->route = alloc_node_route();
@@ -61,7 +68,8 @@ Devolution_node *alloc_node_devolution() {
     return dn;
 }
 
-Devolution *alloc_devolution() {
+Devolution *alloc_devolution() 
+{
     Devolution *d = (Devolution *)malloc(sizeof(Devolution));
     check_allocation(d, "Devolution allocation");
     d->start = NULL;

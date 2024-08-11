@@ -7,7 +7,7 @@ static const char *name_text[] = {
     "Alef Cauan",
     "Mateus da Rocha",
     "Gabriel Lima",
-    "Gabriel Alvez",
+    "Gabriel Alves",
     "Ghabriel Sousa",
     "Marcio Roberto"
 };
@@ -42,9 +42,9 @@ typedef enum score {
 typedef enum odds {
     LOW = 5,
     LOW_MID = 15, 
-    MID = 30,
+    MID = 35,
     MID_HIGH = 55,
-    HIGH = 80
+    HIGH = 100
 } Odds;
 // enum contendo os valores do produtos
 typedef enum product {
@@ -186,9 +186,6 @@ typedef struct aux
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// DEFINES ///////////////////////////////////////
 
-// #define DELIVERY_FIRST 5 // fez a entrega de primeira
-// #define DELIVERY_SECOND 3 // fez a entrega de segunda 
-// #define DELIVERY_DEVOLUTION -1 // não fez a entrega 
 #define CPF_LIMIT 5
 #define TRUE 1
 #define FALSE 0
